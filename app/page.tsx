@@ -2,6 +2,7 @@ import Hero from "@/components/Hero";
 import Products from "@/components/Products";
 import Testimonials from "@/components/Testimonials";
 import ContactForm from "@/components/ContactForm";
+import Footer from "@/components/Footer";
 
 export default function Home() {
   return (
@@ -11,12 +12,8 @@ export default function Home() {
         <Products />
         <Testimonials />
         <ContactForm />
-
-        {/* Footer */}
-        <footer className="py-12 text-center text-gray-600 text-sm border-t border-white/5 bg-black/40">
-          <p>© {new Date().getFullYear()} SaaS Vendor Inc. All rights reserved.</p>
-        </footer>
       </main>
+      <Footer />
     </div>
   );
 }

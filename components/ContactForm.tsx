@@ -134,7 +134,7 @@ export default function ContactForm() {
                             </p>
                         </div>
 
-                        <div className="flex flex-col md:flex-row">
+                        <div className="flex flex-col md:flex-row gap-8 md:gap-16 items-start md:justify-center">
                             <div
                                 className="relative flex flex-col w-auto"
                                 style={{ rowGap: `${contactSpacing.vertical}px` }}
