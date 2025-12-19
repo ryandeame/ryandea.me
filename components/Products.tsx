@@ -1,9 +1,9 @@
 "use client";
 
-import { motion, useScroll } from "framer-motion";
+import { motion } from "framer-motion";
 import { Search, FileText, RefreshCw } from "lucide-react";
 import ProductBackground from "./ProductBackground";
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 
 const products = [
     {
@@ -31,14 +31,15 @@ const products = [
 
 export default function Products() {
     const containerRef = useRef<HTMLElement>(null);
-    const { scrollYProgress } = useScroll({
-        target: containerRef,
-        offset: ["start end", "end start"]
-    });
+    const [isMounted, setIsMounted] = useState(false);
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
 
     return (
         <section ref={containerRef} id="products" className="py-32 px-4 relative overflow-hidden w-full h-full">
-            <ProductBackground scrollYProgress={scrollYProgress} />
+            {isMounted && <ProductBackground />}
 
             <div className="max-w-7xl mx-auto relative z-10">
                 <motion.div

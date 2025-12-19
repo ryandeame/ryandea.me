@@ -6,11 +6,13 @@
   --foreground: #ededed;
 }
 
+html,
 body {
   color: var(--foreground);
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
   scroll-behavior: smooth;
+  position: relative;
 }
 
 @layer utilities {

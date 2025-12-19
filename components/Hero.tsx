@@ -9,7 +9,7 @@ export default function Hero() {
     const [isGlowing, setIsGlowing] = useState(true);
 
     return (
-        <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+        <section className="relative min-h-screen flex items-center justify-center overflow-hidden" style={{ position: 'relative' }}>
             {/* Background Image */}
             <div className="absolute inset-0 z-0 w-full h-full">
                 <Image
@@ -23,15 +23,19 @@ export default function Hero() {
                 <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/80 to-[#0a0a0a]" />
             </div>
 
-            <div className="relative z-10 max-w-6xl mx-auto px-4 text-center">
+            <div className="relative z-10 max-w-6xl mx-auto px-4 text-center" style={{ position: 'relative' }}>
                 {/* Floating decoration */}
-                <motion.div
-                    animate={{ y: [0, -20, 0], rotate: [0, 5, 0] }}
-                    transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                <div
                     className="absolute -top-20 right-10 opacity-20"
+                    style={{ position: 'absolute' }}
                 >
-                    <Sparkles className="w-24 h-24 text-purple-400" />
-                </motion.div>
+                    <motion.div
+                        animate={{ y: [0, -20, 0], rotate: [0, 5, 0] }}
+                        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                    >
+                        <Sparkles className="w-24 h-24 text-purple-400" />
+                    </motion.div>
+                </div>
 
                 <motion.h1
                     initial={{ opacity: 0, y: 30 }}
@@ -39,7 +43,7 @@ export default function Hero() {
                     transition={{ duration: 0.8, delay: 0.2 }}
                     className="text-5xl md:text-8xl font-bold tracking-tighter mb-8"
                 >
-                    Intelligent Solutions for <span className="text-purple-400">Modern Business</span>
+                    From Concept to <span className="text-purple-400">Business Impact</span>
                 </motion.h1>
 
                 <motion.p
@@ -48,8 +52,8 @@ export default function Hero() {
                     transition={{ duration: 0.8, delay: 0.4 }}
                     className="text-xl md:text-2xl text-gray-400 max-w-3xl mx-auto leading-relaxed mb-12"
                 >
-                    Enterprise-grade software suite designed to automate your workflow.
-                    Deploy instantly. Scale infinitely.
+                    Full-stack developer turning your ideas into production-ready solutions.
+                    Clean code. Fast delivery. Real results for your business.
                 </motion.p>
 
                 <motion.div
@@ -59,7 +63,7 @@ export default function Hero() {
                     className="flex justify-center"
                 >
                     <a
-                        href="#products"
+                        href="#projects"
                         className="relative group inline-block no-underline text-white"
                         style={{ color: 'white' }}
                         onMouseEnter={() => setIsGlowing(false)}
@@ -106,7 +110,7 @@ export default function Hero() {
 
                             {/* Button text */}
                             <span className="relative flex items-center gap-3 text-white font-bold text-lg tracking-wide z-10">
-                                Explore Products
+                                Explore Projects
                                 <ArrowRight className="w-6 h-6 transition-transform group-hover:translate-x-1" />
                             </span>
                         </div>
