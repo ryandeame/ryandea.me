@@ -63,7 +63,7 @@ export default function Hero() {
                     className="flex justify-center"
                 >
                     <a
-                        href="#projects"
+                        href="#services"
                         className="relative group inline-block no-underline text-white"
                         style={{ color: 'white' }}
                         onMouseEnter={() => setIsGlowing(false)}
@@ -110,7 +110,7 @@ export default function Hero() {
 
                             {/* Button text */}
                             <span className="relative flex items-center gap-3 text-white font-bold text-lg tracking-wide z-10">
-                                Explore Projects
+                                Explore Services
                                 <ArrowRight className="w-6 h-6 transition-transform group-hover:translate-x-1" />
                             </span>
                         </div>

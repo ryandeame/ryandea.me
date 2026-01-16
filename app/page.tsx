@@ -1,6 +1,7 @@
 import Hero from "@/components/Hero";
+import ServiceOfferings from "@/components/ServiceOfferings";
 import Projects from "@/components/Projects";
-import ContactForm from "@/components/ContactForm";
+import ClientContactForm from "@/components/ClientContactForm";
 import Footer from "@/components/Footer";
 
 export default function Home() {
@@ -8,8 +9,9 @@ export default function Home() {
     <div className="min-h-screen flex flex-col font-[family-name:var(--font-geist-sans)] bg-[#0a0a0a] relative">
       <main className="flex-grow relative">
         <Hero />
+        <ServiceOfferings />
         <Projects />
-        <ContactForm />
+        <ClientContactForm />
       </main>
       <Footer />
     </div>
