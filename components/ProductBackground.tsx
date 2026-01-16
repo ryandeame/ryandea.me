@@ -55,7 +55,7 @@ export default function ProductBackground() {
                 className="absolute bottom-[5%] right-[-5%] w-[200px] h-[200px] md:w-[35vw] md:h-[35vw] opacity-70 md:opacity-60 rounded-full z-10"
             />
 
-            <motion.div
+            {/* <motion.div
                 style={{
                     y: y3,
                     backgroundImage: 'linear-gradient(to bottom right, rgb(99, 102, 241), rgb(139, 92, 246))'
@@ -72,7 +72,7 @@ export default function ProductBackground() {
                     delay: 2
                 }}
                 className="absolute top-[30%] left-[20%] w-[180px] h-[180px] md:w-[25vw] md:h-[25vw] opacity-60 md:opacity-50 rounded-full z-10"
-            />
+            /> */}
 
             {/* Grid Pattern Overlay */}
             <div
