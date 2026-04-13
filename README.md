@@ -1,36 +1,127 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Ryan Deame Portfolio
 
-## Getting Started
+A high-impact personal portfolio built with Next.js, designed to sell capability at a glance.
 
-First, run the development server:
+This project combines a polished service-focused landing page with an experimental cinematic `/new-3d` experience, giving the site two different modes of persuasion:
+
+- a conversion-minded homepage for real business work
+- an immersive 3D portfolio route for visual punch and creative credibility
+
+The result is a site that feels like both a product and a statement.
+
+## Highlights
+
+- App Router Next.js application with React 19 and TypeScript
+- Tailwind CSS 4 styling with motion-heavy, high-contrast UI
+- Dedicated `/new-3d` route with animated Three.js background visuals
+- Services, projects, and contact flow designed for client acquisition
+- Server-side contact endpoint with validation and SMTP delivery
+- Production build ready with standalone output enabled
+
+## Core Routes
+
+- `/`
+  The main portfolio and services landing page
+- `/new-3d`
+  A stylized 3D portfolio experience with animated visuals and editorial layout
+- `/api/contact`
+  Contact form submission endpoint powered by `nodemailer` and `zod`
+
+## Tech Stack
+
+- Next.js 16
+- React 19
+- TypeScript
+- Tailwind CSS 4
+- Framer Motion
+- Three.js
+- Nodemailer
+- Zod
+
+## Local Development
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+Start the dev server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Create a production build:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run build
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Run the production server locally:
 
-## Learn More
+```bash
+npm run start
+```
 
-To learn more about Next.js, take a look at the following resources:
+Lint the project:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm run lint
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Environment Variables
 
-## Deploy on Vercel
+The contact API expects SMTP configuration in `.env.local`.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```env
+SMTP_HOST=
+SMTP_PORT=587
+SMTP_USER=
+SMTP_PASS=
+SMTP_FROM=
+CONTACT_TO=
+CONTACT_SUBJECT_PREFIX=[PORTFOLIO]
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Without these values, the contact endpoint will return an email configuration error.
+
+## Project Structure
+
+```text
+app/
+  page.tsx              # Main landing page
+  new-3d/               # Alternate 3D portfolio route
+  api/contact/route.ts  # Contact form API
+
+components/
+  Hero.tsx
+  ServiceOfferings.tsx
+  Projects.tsx
+  ClientContactForm.tsx
+  new-3d/               # Client-only 3D experience components
+
+data/
+  projects.ts           # Portfolio project content
+```
+
+## Why This Repo Exists
+
+This is not a generic template. It is a live portfolio codebase built to communicate:
+
+- technical range
+- visual taste
+- speed of execution
+- business usefulness
+
+It is meant to feel custom, confident, and hard to ignore.
+
+## Build Notes
+
+- The repository ignores local exploratory assets in `new_3D/`
+- Local `worktrees/` content is ignored
+- The app is configured with `output: "standalone"` in `next.config.ts`
+
+## License
+
+Private project unless otherwise specified by the repository owner.

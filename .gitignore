@@ -42,3 +42,7 @@ next-env.d.ts
 
 # firebase
 .firebase
+
+# local imported assets
+/new_3D/
+/worktrees/

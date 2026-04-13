@@ -1,0 +1,65 @@
+.page {
+  --new-3d-bg: #050505;
+  --new-3d-fg: #ffffff;
+  --new-3d-accent: #f27d26;
+  position: relative;
+  isolation: isolate;
+  min-height: 100vh;
+  overflow-x: hidden;
+  background:
+    radial-gradient(circle at top, rgba(242, 125, 38, 0.16), transparent 32%),
+    var(--new-3d-bg);
+  color: var(--new-3d-fg);
+  font-family: var(--font-new-3d-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+.page section {
+  scroll-margin-top: 8rem;
+}
+
+.serif {
+  font-family: var(--font-new-3d-serif), serif;
+}
+
+.glass {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.textGradient {
+  background: linear-gradient(to right, #ffffff, #888888);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.accentText {
+  color: var(--new-3d-accent);
+}
+
+.accentSurface {
+  background-color: var(--new-3d-accent);
+  color: #ffffff;
+}
+
+.borderTint {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.fadedText {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.mutedText {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.softText {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.caption {
+  color: rgba(255, 255, 255, 0.3);
+}
