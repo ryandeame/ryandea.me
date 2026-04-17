@@ -9,7 +9,11 @@ import { projects, Project } from "@/data/projects";
 
 import VideoModal from "./VideoModal";
 
-export default function Projects() {
+interface ProjectsProps {
+    showBackground?: boolean;
+}
+
+export default function Projects({ showBackground = true }: ProjectsProps) {
     const containerRef = useRef<HTMLElement>(null);
     const [isMounted, setIsMounted] = useState(false);
 
@@ -41,7 +45,7 @@ export default function Projects() {
 
     return (
         <section ref={containerRef} id="projects" className="py-32 px-4 relative overflow-hidden w-full h-full" style={{ position: 'relative' }}>
-            {isMounted && <ProductBackground />}
+            {showBackground && isMounted && <ProductBackground />}
 
             <div className="max-w-7xl mx-auto relative z-10">
                 <motion.div

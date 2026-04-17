@@ -2,9 +2,10 @@
 
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
 type AnimatedShape = {
-  mesh: THREE.Mesh;
+  mesh: THREE.Object3D;
   basePosition: THREE.Vector3;
   floatAmplitude: number;
   rotationSpeed: THREE.Vector3;
@@ -44,9 +45,6 @@ export default function ThreeBackground() {
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     container.appendChild(renderer.domElement);
 
-    const timer = new THREE.Timer();
-    timer.connect(document);
-
     const ambientLight = new THREE.AmbientLight("#ffffff", 0.35);
     scene.add(ambientLight);
 
@@ -59,7 +57,7 @@ export default function ThreeBackground() {
     keyLight.shadow.mapSize.set(1024, 1024);
     scene.add(keyLight);
 
-    const accentLight = new THREE.PointLight("#f27d26", 18, 0, 2);
+    const accentLight = new THREE.PointLight("#a855f7", 18, 0, 2);
     accentLight.position.set(-6, 4, 6);
     scene.add(accentLight);
 
@@ -78,27 +76,39 @@ export default function ThreeBackground() {
 
     const materials = {
       accent: new THREE.MeshPhysicalMaterial({
-        color: "#f27d26",
+        color: "#c084fc",
         metalness: 0.8,
         roughness: 0.18,
         clearcoat: 0.4,
       }),
       charcoal: new THREE.MeshPhysicalMaterial({
-        color: "#222222",
+        color: "#4c1d95",
         metalness: 0.7,
         roughness: 0.28,
       }),
       graphite: new THREE.MeshPhysicalMaterial({
-        color: "#444444",
+        color: "#f5f5f5",
         metalness: 0.65,
         roughness: 0.32,
       }),
       silver: new THREE.MeshPhysicalMaterial({
-        color: "#666666",
+        color: "#c4b5fd",
+        metalness: 0.82,
+        roughness: 0.2,
+      }),
+      computer: new THREE.MeshPhysicalMaterial({
+        color: "#ede9fe",
         metalness: 0.82,
         roughness: 0.2,
       }),
     };
+
+    const computerAnchor = new THREE.Group();
+    const computerVisual = new THREE.Group();
+    computerAnchor.add(computerVisual);
+    const floppyAnchor = new THREE.Group();
+    const floppyVisual = new THREE.Group();
+    floppyAnchor.add(floppyVisual);
 
     const shapes: AnimatedShape[] = [
       {
@@ -106,7 +116,7 @@ export default function ThreeBackground() {
           new THREE.IcosahedronGeometry(1.15, 8),
           materials.accent,
         ),
-        basePosition: new THREE.Vector3(-2.8, 2.4, -2),
+        basePosition: new THREE.Vector3(3.2, -2.1, -3.2),
         floatAmplitude: 0.55,
         rotationSpeed: new THREE.Vector3(0.6, 0.9, 0.25),
       },
@@ -115,24 +125,18 @@ export default function ThreeBackground() {
           new THREE.TorusGeometry(1.2, 0.38, 24, 120),
           materials.graphite,
         ),
-        basePosition: new THREE.Vector3(3.2, -2.1, -3.2),
+        basePosition: new THREE.Vector3(-3.6, -3.8, -4.4),
         floatAmplitude: 0.4,
         rotationSpeed: new THREE.Vector3(0.45, 0.55, 0.3),
       },
       {
-        mesh: new THREE.Mesh(
-          new THREE.BoxGeometry(1.5, 1.5, 1.5, 6, 6, 6),
-          materials.charcoal,
-        ),
-        basePosition: new THREE.Vector3(-3.6, -3.8, -4.4),
+        mesh: floppyAnchor,
+        basePosition: new THREE.Vector3(-2.8, 2.4, -2),
         floatAmplitude: 0.32,
         rotationSpeed: new THREE.Vector3(0.35, 0.4, 0.25),
       },
       {
-        mesh: new THREE.Mesh(
-          new THREE.SphereGeometry(0.95, 48, 48),
-          materials.silver,
-        ),
+        mesh: computerAnchor,
         basePosition: new THREE.Vector3(2.5, 3.6, -5.2),
         floatAmplitude: 0.48,
         rotationSpeed: new THREE.Vector3(0.25, 0.5, 0.15),
@@ -144,6 +148,96 @@ export default function ThreeBackground() {
       mesh.castShadow = true;
       mesh.receiveShadow = true;
       scene.add(mesh);
+    });
+
+    const gltfLoader = new GLTFLoader();
+    const textureLoader = new THREE.TextureLoader();
+    let importedComputer: THREE.Object3D | null = null;
+    let importedFloppy: THREE.Object3D | null = null;
+
+    const floppyDiffuseMap = textureLoader.load(
+      "/models/floppy_disk/textures/material_0_diffuse.png",
+    );
+    floppyDiffuseMap.colorSpace = THREE.SRGBColorSpace;
+    floppyDiffuseMap.flipY = false;
+
+    const floppyNormalMap = textureLoader.load(
+      "/models/floppy_disk/textures/material_0_normal.png",
+    );
+    floppyNormalMap.flipY = false;
+
+    const floppySpecGlossMap = textureLoader.load(
+      "/models/floppy_disk/textures/material_0_specularGlossiness.png",
+    );
+    floppySpecGlossMap.flipY = false;
+
+    const floppyMaterial = new THREE.MeshStandardMaterial({
+      color: "#a855f7",
+      normalMap: floppyNormalMap,
+      roughness: 0.2,
+      metalness: 0.82,
+      roughnessMap: floppySpecGlossMap,
+    });
+
+    gltfLoader.load("/models/floppy_disk/scene.gltf", (gltf) => {
+      importedFloppy = gltf.scene;
+
+      importedFloppy.traverse((child) => {
+        if (child instanceof THREE.Mesh) {
+          child.material = floppyMaterial;
+          child.castShadow = true;
+          child.receiveShadow = true;
+        }
+      });
+
+      importedFloppy.updateMatrixWorld(true);
+
+      const bounds = new THREE.Box3().setFromObject(importedFloppy);
+      const size = bounds.getSize(new THREE.Vector3());
+      const center = bounds.getCenter(new THREE.Vector3());
+      const maxDimension = Math.max(size.x, size.y, size.z) || 1;
+      const scale = 1.8 / maxDimension;
+
+      // Recenter the asset so the wrapper group rotates around the model's
+      // visual midpoint while preserving the GLTF's supplied textured materials.
+      importedFloppy.position.sub(center);
+
+      floppyVisual.scale.setScalar(scale);
+      floppyVisual.rotation.x = 0.35;
+      floppyVisual.rotation.y = 0.8;
+      floppyVisual.rotation.z = -0.25;
+
+      floppyVisual.add(importedFloppy);
+    });
+
+    gltfLoader.load("/models/personal_computer/scene.gltf", (gltf) => {
+      importedComputer = gltf.scene;
+
+      importedComputer.traverse((child) => {
+        if (child instanceof THREE.Mesh) {
+          child.material = materials.computer;
+          child.castShadow = true;
+          child.receiveShadow = true;
+        }
+      });
+
+      importedComputer.updateMatrixWorld(true);
+
+      const bounds = new THREE.Box3().setFromObject(importedComputer);
+      const size = bounds.getSize(new THREE.Vector3());
+      const center = bounds.getCenter(new THREE.Vector3());
+      const maxDimension = Math.max(size.x, size.y, size.z) || 1;
+      const scale = 1.9 / maxDimension;
+
+      // Recenter the loaded asset around the local origin so the animated parent
+      // group rotates around the visible center of the model.
+      importedComputer.position.sub(center);
+
+      computerVisual.scale.setScalar(scale);
+      computerVisual.rotation.x = -0.2;
+      computerVisual.rotation.y = -0.8;
+
+      computerVisual.add(importedComputer);
     });
 
     const resizeScene = () => {
@@ -158,11 +252,14 @@ export default function ThreeBackground() {
     };
 
     let frameId = 0;
+    let lastTimestamp = 0;
+    let elapsed = 0;
 
     const renderFrame = (timestamp: number) => {
-      timer.update(timestamp);
-      const elapsed = timer.getElapsed();
-      const delta = timer.getDelta();
+      const delta =
+        lastTimestamp === 0 ? 1 / 60 : Math.min((timestamp - lastTimestamp) / 1000, 0.1);
+      lastTimestamp = timestamp;
+      elapsed += delta;
       const maxScroll =
         Math.max(
           document.documentElement.scrollHeight,
@@ -200,15 +297,36 @@ export default function ThreeBackground() {
     return () => {
       window.cancelAnimationFrame(frameId);
       window.removeEventListener("resize", resizeScene);
-      timer.dispose();
 
       shapes.forEach(({ mesh }) => {
-        mesh.geometry.dispose();
+        if (mesh instanceof THREE.Mesh) {
+          mesh.geometry.dispose();
+        }
       });
+
+      if (importedComputer) {
+        importedComputer.traverse((child) => {
+          if (child instanceof THREE.Mesh) {
+            child.geometry.dispose();
+          }
+        });
+      }
+
+      if (importedFloppy) {
+        importedFloppy.traverse((child) => {
+          if (child instanceof THREE.Mesh) {
+            child.geometry.dispose();
+          }
+        });
+      }
 
       Object.values(materials).forEach((material) => {
         material.dispose();
       });
+      floppyMaterial.dispose();
+      floppyDiffuseMap.dispose();
+      floppyNormalMap.dispose();
+      floppySpecGlossMap.dispose();
 
       shadowCatcher.geometry.dispose();
       (shadowCatcher.material as THREE.Material).dispose();

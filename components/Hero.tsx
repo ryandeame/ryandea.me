@@ -5,37 +5,49 @@ import Image from "next/image";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { useState } from "react";
 
-export default function Hero() {
+interface HeroProps {
+    showFloatingIcon?: boolean;
+    showBackgroundImage?: boolean;
+}
+
+export default function Hero({
+    showFloatingIcon = true,
+    showBackgroundImage = true,
+}: HeroProps) {
     const [isGlowing, setIsGlowing] = useState(true);
 
     return (
         <section className="relative min-h-screen flex items-center justify-center overflow-hidden" style={{ position: 'relative' }}>
             {/* Background Image */}
-            <div className="absolute inset-0 z-0 w-full h-full">
-                <Image
-                    src="/hero-bg.png"
-                    alt="Cyber Background"
-                    fill
-                    sizes="100vw"
-                    className="object-cover opacity-40"
-                    priority
-                />
-                <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/80 to-[#0a0a0a]" />
-            </div>
+            {showBackgroundImage && (
+                <div className="absolute inset-0 z-0 w-full h-full">
+                    <Image
+                        src="/hero-bg.png"
+                        alt="Cyber Background"
+                        fill
+                        sizes="100vw"
+                        className="object-cover opacity-40"
+                        priority
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/80 to-[#0a0a0a]" />
+                </div>
+            )}
 
             <div className="relative z-10 max-w-6xl mx-auto px-4 text-center" style={{ position: 'relative' }}>
                 {/* Floating decoration */}
-                <div
-                    className="absolute -top-20 right-10 opacity-20"
-                    style={{ position: 'absolute' }}
-                >
-                    <motion.div
-                        animate={{ y: [0, -20, 0], rotate: [0, 5, 0] }}
-                        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                {showFloatingIcon && (
+                    <div
+                        className="absolute -top-20 right-10 opacity-20"
+                        style={{ position: 'absolute' }}
                     >
-                        <Sparkles className="w-24 h-24 text-purple-400" />
-                    </motion.div>
-                </div>
+                        <motion.div
+                            animate={{ y: [0, -20, 0], rotate: [0, 5, 0] }}
+                            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                        >
+                            <Sparkles className="w-24 h-24 text-purple-400" />
+                        </motion.div>
+                    </div>
+                )}
 
                 <motion.h1
                     initial={{ opacity: 0, y: 30 }}

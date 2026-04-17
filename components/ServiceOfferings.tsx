@@ -38,12 +38,22 @@ const services = [
     }
 ];
 
-export default function ServiceOfferings() {
+interface ServiceOfferingsProps {
+    showSectionBackground?: boolean;
+}
+
+export default function ServiceOfferings({
+    showSectionBackground = true,
+}: ServiceOfferingsProps) {
     return (
         <section id="services" className="py-24 px-4 relative overflow-hidden">
             {/* Background effects */}
-            <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a] via-purple-950/10 to-[#0a0a0a]" />
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-purple-900/20 rounded-full blur-[150px] pointer-events-none" />
+            {showSectionBackground && (
+                <>
+                    <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a] via-purple-950/10 to-[#0a0a0a]" />
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-purple-900/20 rounded-full blur-[150px] pointer-events-none" />
+                </>
+            )}
 
             <div className="max-w-7xl mx-auto relative z-10">
                 {/* Section Header */}
