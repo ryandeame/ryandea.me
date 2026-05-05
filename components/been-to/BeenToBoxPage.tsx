@@ -13,6 +13,7 @@ import {
   type BeenToStat,
 } from "./beenToData";
 import { useBeenToLocations } from "./useBeenToLocations";
+import type { PublicBeenToBoxProfileData } from "@/lib/public-profiles";
 
 const statStyles = [
   "from-teal-500 to-cyan-700",
@@ -93,11 +94,19 @@ function writeDimensionCache(dimensionsByImage: Record<string, BeenToImageDimens
 function useMeasuredImageRows(locations: BeenToLocationWithImage[]) {
   const [dimensionsByImage, setDimensionsByImage] = useState<
     Record<string, BeenToImageDimensions>
-  >(() => readDimensionCache());
+  >({});
   const imageKey = useMemo(
     () => locations.map((location) => location.heroImage).join("|"),
     [locations],
   );
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setDimensionsByImage(readDimensionCache());
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -172,7 +181,11 @@ function areImagesMeasured(
   return locations.every((location) => Boolean(dimensionsByImage[location.heroImage]));
 }
 
-export default function BeenToBoxPage() {
+export default function BeenToBoxPage({
+  profile,
+}: {
+  profile?: PublicBeenToBoxProfileData | null;
+}) {
   const {
     archiveLocations,
     authReady,
@@ -180,11 +193,12 @@ export default function BeenToBoxPage() {
     hasMore,
     initialLoading,
     isAuthenticated,
+    isPublicPreview,
     loadingMore,
     loadMore,
     primaryLocations,
     stats,
-  } = useBeenToLocations();
+  } = useBeenToLocations({ profile });
   const { dimensionsByImage: primaryDimensions } = useMeasuredImageRows(primaryLocations);
   const { dimensionsByImage: archiveDimensions } = useMeasuredImageRows(archiveLocations);
   const [addMenuOpen, setAddMenuOpen] = useState(false);
@@ -210,6 +224,7 @@ export default function BeenToBoxPage() {
     [archiveDimensions, archiveLocations],
   );
   const hasArchiveDestinations = archiveDestinations.length > 0;
+  const profileHref = profile ? `/been-to-box/${profile.username}` : "/been-to-box";
 
   useEffect(() => {
     const sentinel = scrollSentinelRef.current;
@@ -277,7 +292,7 @@ export default function BeenToBoxPage() {
           <div className="pointer-events-none absolute inset-3 rounded-[1.75rem] border border-white/15 sm:inset-4 sm:rounded-[2.35rem]" />
 
           <div className="relative grid min-h-[1180px] gap-3 sm:gap-4 lg:min-h-0 lg:grid-cols-12 lg:auto-rows-[150px]">
-            <HeroBanner />
+            <HeroBanner profile={profile} />
 
             {initialLoading && primaryDestinations.length === 0 ? <LoadingCompartment /> : null}
             {error ? <ErrorCompartment message={error} /> : null}
@@ -291,6 +306,8 @@ export default function BeenToBoxPage() {
                 key={destination.name}
                 destination={destination}
                 index={index}
+                profileUsername={profile?.username}
+                canOpenGallery={!isPublicPreview}
               />
             ))}
 
@@ -304,9 +321,15 @@ export default function BeenToBoxPage() {
                   key={destination.name}
                   destination={destination}
                   index={primaryDestinations.length + index}
+                  profileUsername={profile?.username}
+                  canOpenGallery={!isPublicPreview}
                 />
               ))}
             </div>
+          ) : null}
+
+          {isPublicPreview && primaryDestinations.length + archiveDestinations.length >= 10 ? (
+            <LockedPreviewRemainder profile={profile} />
           ) : null}
         </div>
 
@@ -316,7 +339,9 @@ export default function BeenToBoxPage() {
 
         <div ref={scrollSentinelRef} className="h-10" />
 
-        {authReady && !isAuthenticated && showAuthGate ? <AuthScrollGate /> : null}
+        {authReady && !isAuthenticated && showAuthGate && !isPublicPreview ? (
+          <AuthScrollGate redirectHref={profileHref} />
+        ) : null}
 
         {authReady && isAuthenticated && !hasMore && hasArchiveDestinations ? (
           <div className="mx-auto mt-8 rounded-full border-2 border-[#24110c]/15 bg-white/55 px-5 py-3 text-center text-sm font-black uppercase tracking-[0.18em] text-[#24110c]/70 shadow-[0_8px_0_rgba(36,17,12,0.1)]">
@@ -325,32 +350,34 @@ export default function BeenToBoxPage() {
         ) : null}
       </section>
 
-      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
-        {addMenuOpen ? (
-          <div className="rounded-[1.5rem] border-2 border-[#24110c]/15 bg-[#fff4cf] p-2 shadow-[0_18px_44px_rgba(36,17,12,0.22)]">
-            <Link
-              className="block rounded-2xl bg-[#24110c] px-5 py-3 text-sm font-black uppercase tracking-[0.16em] text-[#fff4cf] transition-transform hover:-translate-y-0.5"
-              href="/been-to-box/add-photo"
-            >
-              Add Photos
-            </Link>
-          </div>
-        ) : null}
-        <button
-          aria-expanded={addMenuOpen}
-          aria-label="Open Been-To-Box actions"
-          className="grid h-16 w-16 place-items-center rounded-full border-[5px] border-[#fff4cf] bg-[#f97316] text-white shadow-[0_12px_0_rgba(36,17,12,0.22)] transition-transform hover:-translate-y-1"
-          onClick={() => setAddMenuOpen((isOpen) => !isOpen)}
-          type="button"
-        >
-          <Plus className={`h-8 w-8 transition-transform ${addMenuOpen ? "rotate-45" : ""}`} />
-        </button>
-      </div>
+      {authReady && isAuthenticated ? (
+        <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
+          {addMenuOpen ? (
+            <div className="rounded-[1.5rem] border-2 border-[#24110c]/15 bg-[#fff4cf] p-2 shadow-[0_18px_44px_rgba(36,17,12,0.22)]">
+              <Link
+                className="block rounded-2xl bg-[#24110c] px-5 py-3 text-sm font-black uppercase tracking-[0.16em] text-[#fff4cf] transition-transform hover:-translate-y-0.5"
+                href="/been-to-box/add-photo"
+              >
+                Add Photos
+              </Link>
+            </div>
+          ) : null}
+          <button
+            aria-expanded={addMenuOpen}
+            aria-label="Open Been-To-Box actions"
+            className="grid h-16 w-16 place-items-center rounded-full border-[5px] border-[#fff4cf] bg-[#f97316] text-white shadow-[0_12px_0_rgba(36,17,12,0.22)] transition-transform hover:-translate-y-1"
+            onClick={() => setAddMenuOpen((isOpen) => !isOpen)}
+            type="button"
+          >
+            <Plus className={`h-8 w-8 transition-transform ${addMenuOpen ? "rotate-45" : ""}`} />
+          </button>
+        </div>
+      ) : null}
     </main>
   );
 }
 
-function HeroBanner() {
+function HeroBanner({ profile }: { profile?: PublicBeenToBoxProfileData | null }) {
   return (
     <article className="group relative isolate min-h-[300px] overflow-hidden rounded-[1.75rem] border-2 border-[#151313]/80 bg-[#061329] shadow-[inset_0_0_0_4px_rgba(255,255,255,0.08),0_14px_0_rgba(21,19,19,0.18)] lg:col-start-1 lg:col-span-7 lg:row-start-1 lg:row-span-2">
       <Image
@@ -373,13 +400,15 @@ function HeroBanner() {
       <div className="absolute bottom-6 left-5 max-w-2xl sm:left-8">
         <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-[#facc15] px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-[#24110c] shadow-[0_6px_0_rgba(0,0,0,0.24)]">
           <Plane className="h-4 w-4" />
-          World archive
+          {profile ? `@${profile.username}` : "World archive"}
         </div>
         <h1 className="text-5xl font-black leading-[0.9] tracking-tight text-[#f8edcf] drop-shadow-[0_5px_0_rgba(0,0,0,0.35)] sm:text-7xl lg:text-8xl">
           Been-To-Box
         </h1>
         <p className="mt-4 max-w-xl text-xl font-bold leading-8 text-[#f8edcf]/90 sm:text-2xl">
-          Open the world you have lived.
+          {profile
+            ? `${profile.displayName}'s world, plated one place at a time.`
+            : "Open the world you have lived."}
         </p>
       </div>
     </article>
@@ -387,11 +416,15 @@ function HeroBanner() {
 }
 
 function DestinationCompartment({
+  canOpenGallery = true,
   destination,
   index,
+  profileUsername,
 }: {
+  canOpenGallery?: boolean;
   destination: BeenToDestination;
   index: number;
+  profileUsername?: string;
 }) {
   const Icon = destination.icon;
 
@@ -436,10 +469,16 @@ function DestinationCompartment({
   const animationDelay = `${index * 90}ms`;
   const className = `group relative isolate min-h-[260px] animate-[been-to-card-in_560ms_cubic-bezier(0.22,1,0.36,1)_both] overflow-hidden rounded-[1.65rem] border-2 border-[#151313]/75 bg-[#24110c] shadow-[inset_0_0_0_4px_rgba(255,255,255,0.08),0_12px_0_rgba(21,19,19,0.16)] transition-transform duration-300 hover:-translate-y-1 ${destination.layoutClass}`;
 
-  if (destination.slug) {
+  const href = profileUsername && destination.slug
+    ? `/been-to-box/${profileUsername}/${destination.slug}`
+    : destination.slug
+      ? `/been-to-box/${destination.slug}`
+      : null;
+
+  if (href && canOpenGallery) {
     return (
       <Link
-        href={`/been-to-box/${destination.slug}`}
+        href={href}
         className={className}
         style={{ borderColor: destination.accent, animationDelay }}
       >
@@ -455,6 +494,57 @@ function DestinationCompartment({
     >
       {content}
     </article>
+  );
+}
+
+function LockedPreviewRemainder({
+  profile,
+}: {
+  profile?: PublicBeenToBoxProfileData | null;
+}) {
+  const redirectHref = profile ? `/been-to-box/${profile.username}` : "/been-to-box";
+
+  return (
+    <div className="relative mt-3 overflow-hidden rounded-[1.75rem] border-2 border-[#151313]/75 bg-[#24110c] p-3 shadow-[inset_0_0_0_4px_rgba(255,255,255,0.08),0_12px_0_rgba(21,19,19,0.16)] sm:mt-4 sm:p-4">
+      <div className="grid min-h-[360px] gap-3 blur-md sm:gap-4 lg:grid-cols-12 lg:auto-rows-[150px]">
+        {[0, 1, 2, 3, 4, 5].map((item) => (
+          <div
+            key={item}
+            className={`rounded-[1.65rem] border-2 border-[#f8edcf]/40 bg-gradient-to-br ${
+              item % 3 === 0
+                ? "from-[#f97316] to-[#8b5cf6]"
+                : item % 3 === 1
+                  ? "from-[#14b8a6] to-[#facc15]"
+                  : "from-[#ef4444] to-[#061329]"
+            } ${item < 2 ? "lg:col-span-6" : "lg:col-span-3"} lg:row-span-2`}
+          />
+        ))}
+      </div>
+      <div className="absolute inset-0 grid place-items-center bg-[#24110c]/35 p-6 backdrop-blur-[2px]">
+        <div className="max-w-xl rounded-[2rem] border-[6px] border-[#151313] bg-[#fff4cf] p-6 text-center shadow-[0_16px_0_rgba(21,19,19,0.22)]">
+          <p className="text-sm font-black uppercase tracking-[0.2em] text-[#8f1110]/75">
+            More compartments are packed
+          </p>
+          <h2 className="mt-3 text-3xl font-black text-[#24110c] sm:text-4xl">
+            Log in to reveal the rest of this Been-To-Box.
+          </h2>
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
+            <Link
+              className="rounded-full bg-[#24110c] px-6 py-3 text-sm font-black uppercase tracking-[0.16em] text-[#f8edcf] shadow-[0_7px_0_rgba(36,17,12,0.22)]"
+              href={`/sign-in?redirect=${encodeURIComponent(redirectHref)}`}
+            >
+              Log in
+            </Link>
+            <Link
+              className="rounded-full border-2 border-[#24110c]/20 bg-[#f97316] px-6 py-3 text-sm font-black uppercase tracking-[0.16em] text-white shadow-[0_7px_0_rgba(36,17,12,0.18)]"
+              href={`/sign-up?redirect=${encodeURIComponent(redirectHref)}`}
+            >
+              Create account
+            </Link>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -487,7 +577,7 @@ function ScrollLoader() {
   );
 }
 
-function AuthScrollGate() {
+function AuthScrollGate({ redirectHref }: { redirectHref: string }) {
   return (
     <section className="mx-auto mt-8 max-w-3xl rounded-[2.25rem] border-[6px] border-[#151313] bg-[#fff4cf] p-7 text-center shadow-[0_18px_0_rgba(36,17,12,0.16)]">
       <div className="mx-auto mb-5 grid h-24 w-24 place-items-center rounded-full border-[8px] border-[#8f1110] bg-[#facc15]">
@@ -503,12 +593,18 @@ function AuthScrollGate() {
         The first five destinations are open for preview. The rest of the Been-To-Box is reserved for authenticated travelers.
       </p>
       <div className="mt-7 flex flex-wrap justify-center gap-3">
-        <button className="rounded-full bg-[#24110c] px-6 py-3 text-sm font-black uppercase tracking-[0.16em] text-[#f8edcf] shadow-[0_7px_0_rgba(36,17,12,0.22)]">
+        <Link
+          className="rounded-full bg-[#24110c] px-6 py-3 text-sm font-black uppercase tracking-[0.16em] text-[#f8edcf] shadow-[0_7px_0_rgba(36,17,12,0.22)]"
+          href={`/sign-in?redirect=${encodeURIComponent(redirectHref)}`}
+        >
           Log in
-        </button>
-        <button className="rounded-full border-2 border-[#24110c]/20 bg-[#f97316] px-6 py-3 text-sm font-black uppercase tracking-[0.16em] text-white shadow-[0_7px_0_rgba(36,17,12,0.18)]">
+        </Link>
+        <Link
+          className="rounded-full border-2 border-[#24110c]/20 bg-[#f97316] px-6 py-3 text-sm font-black uppercase tracking-[0.16em] text-white shadow-[0_7px_0_rgba(36,17,12,0.18)]"
+          href={`/sign-up?redirect=${encodeURIComponent(redirectHref)}`}
+        >
           Create account
-        </button>
+        </Link>
       </div>
     </section>
   );

@@ -2,11 +2,13 @@
 
 import { useCallback, useState } from 'react';
 
-import { auth } from '@/lib/firebase';
+import { useAuth } from '@/components/auth/AuthProvider';
 
 const CACHE_KEY = 'been-to-box:locations-cache:v1';
+const COVER_UPDATED_KEY = 'been-to-box:cover-updated';
 
 export function useBeenToCoverPhoto() {
+  const { getFreshIdToken, user } = useAuth();
   const [error, setError] = useState(null);
   const [saving, setSaving] = useState(false);
 
@@ -19,8 +21,16 @@ export function useBeenToCoverPhoto() {
     setSaving(true);
 
     try {
-      const user = auth.currentUser;
-      const token = user ? await user.getIdToken() : null;
+      if (!user) {
+        throw new Error('Sign in before updating cover photos.');
+      }
+
+      const token = await getFreshIdToken();
+
+      if (!token) {
+        throw new Error('Sign in before updating cover photos.');
+      }
+
       const response = await fetch('/api/been-to-box/cover-photo', {
         body: JSON.stringify({
           image: {
@@ -34,7 +44,7 @@ export function useBeenToCoverPhoto() {
         }),
         headers: {
           'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          Authorization: `Bearer ${token}`,
         },
         method: 'POST',
       });
@@ -45,13 +55,15 @@ export function useBeenToCoverPhoto() {
       }
 
       window.localStorage.removeItem(CACHE_KEY);
+      window.sessionStorage.removeItem('been-to-box:image-dimensions:v2');
+      window.sessionStorage.setItem(COVER_UPDATED_KEY, '1');
     } catch (updateError) {
       setError(updateError);
       throw updateError;
     } finally {
       setSaving(false);
     }
-  }, []);
+  }, [getFreshIdToken, user]);
 
   return {
     error,

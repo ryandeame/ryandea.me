@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 
-import { BeenToBoxPage } from "@/components/been-to";
+import { BeenToBoxSplashPage } from "@/components/been-to";
 
 export const metadata: Metadata = {
   title: "Been-To-Box | Ryan Deame",
   description:
-    "A flat 2D bento-box inspired travel archive built from Ryan Deame's destination photos.",
+    "A colorful travel bento app for turning places, photos, and global memories into a shareable profile.",
 };
 
 export default function Page() {
-  return <BeenToBoxPage />;
+  return <BeenToBoxSplashPage />;
 }

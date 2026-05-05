@@ -21,9 +21,10 @@ import {
   type BeenToLocation,
   type BeenToLocationWithImage,
 } from "./beenToData";
+import type { PublicBeenToBoxProfileData } from "@/lib/public-profiles";
 
 const PAGE_SIZE = 5;
-const DEV_AUTH_BYPASS = process.env.NODE_ENV === "development";
+const PUBLIC_PREVIEW_SIZE = 10;
 const CACHE_KEY = "been-to-box:locations-cache:v1";
 const METADATA_COLLECTION = "appMetadata";
 const METADATA_DOC_ID = "beenToBox";
@@ -33,12 +34,30 @@ type ImageDoc = {
   imageDate?: unknown;
 };
 
+type PublicTopImageDoc = {
+  downloadURL?: unknown;
+  height?: unknown;
+  imageId?: unknown;
+  imageCount?: unknown;
+  locationCountry?: unknown;
+  locationId?: unknown;
+  locationName?: unknown;
+  locationSlug?: unknown;
+  photoCount?: unknown;
+  rank?: unknown;
+  storagePath?: unknown;
+  width?: unknown;
+};
+
 type BentoInfoDoc = {
   coverImageUrl?: string | null;
   imageCount?: number | null;
 };
 
 type BaseBeenToLocation = Omit<BeenToLocation, "heroImage" | "photoCount">;
+type UseBeenToLocationsOptions = {
+  profile?: PublicBeenToBoxProfileData | null;
+};
 type BeenToCachePayload = {
   cachedAt: number;
   cursorId: string | null;
@@ -152,8 +171,11 @@ function writeLocationsCache(cache: BeenToCachePayload) {
 async function enrichLocation(
   location: BaseBeenToLocation,
   bentoInfo: BentoInfoDoc | undefined,
+  profileUid: string | null,
 ): Promise<BeenToLocation> {
-  const imageSnapshot = await getDocs(collection(db, "locations", location.id, "images"));
+  const imageSnapshot = await getDocs(
+    getLocationImagesCollection(profileUid, location.id),
+  );
   const imageDocs = imageSnapshot.docs.map((doc) => doc.data() as ImageDoc);
   const sortedImages = sortImagesByDate(imageDocs);
   const firstImage = sortedImages.find(
@@ -181,9 +203,35 @@ async function enrichLocation(
   };
 }
 
-async function fetchBentoInfoByLocationId(locationIds: string[]) {
+async function fetchBentoInfoByLocationId(
+  locationIds: string[],
+  profileUid: string | null,
+) {
   if (locationIds.length === 0) {
     return {};
+  }
+
+  if (profileUid) {
+    const entries = await Promise.all(
+      locationIds.map(async (locationId) => {
+        const snapshot = await getDoc(
+          getBentoInfoDoc(profileUid, locationId),
+        );
+        const data = snapshot.exists() ? snapshot.data() : {};
+
+        return [
+          locationId,
+          {
+            coverImageUrl:
+              typeof data?.coverImageUrl === "string" ? data.coverImageUrl : null,
+            imageCount:
+              typeof data?.imageCount === "number" ? data.imageCount : null,
+          },
+        ] as const;
+      }),
+    );
+
+    return Object.fromEntries(entries);
   }
 
   try {
@@ -217,7 +265,59 @@ async function fetchBentoInfoByLocationId(locationIds: string[]) {
   return {};
 }
 
-export function useBeenToLocations() {
+function getLocationCollection(profileUid: string | null) {
+  return profileUid
+    ? collection(db, "users", profileUid, "locations")
+    : collection(db, "locations");
+}
+
+function getLocationImagesCollection(profileUid: string | null, locationId: string) {
+  return profileUid
+    ? collection(db, "users", profileUid, "locations", locationId, "images")
+    : collection(db, "locations", locationId, "images");
+}
+
+function getBentoInfoDoc(profileUid: string, locationId: string) {
+  return doc(db, "users", profileUid, "locations", locationId, "meta", "bento-info");
+}
+
+function toPublicPreviewLocation(docId: string, data: PublicTopImageDoc): BeenToLocationWithImage | null {
+  if (typeof data.downloadURL !== "string" || data.downloadURL.length === 0) {
+    return null;
+  }
+
+  const locationId =
+    typeof data.locationId === "string" && data.locationId.length > 0
+      ? data.locationId
+      : docId;
+  const locationSlug =
+    typeof data.locationSlug === "string" && data.locationSlug.length > 0
+      ? data.locationSlug
+      : locationId;
+  const photoCount =
+    typeof data.photoCount === "number" && Number.isFinite(data.photoCount)
+      ? data.photoCount
+      : typeof data.imageCount === "number" && Number.isFinite(data.imageCount)
+        ? data.imageCount
+        : 1;
+
+  return {
+    country:
+      typeof data.locationCountry === "string" && data.locationCountry.length > 0
+        ? data.locationCountry
+        : "Global archive",
+    heroImage: data.downloadURL,
+    id: `${locationId}-${docId}`,
+    name:
+      typeof data.locationName === "string" && data.locationName.length > 0
+        ? data.locationName
+        : locationSlug,
+    photoCount,
+  };
+}
+
+export function useBeenToLocations(options: UseBeenToLocationsOptions = {}) {
+  const profile = options.profile ?? null;
   const [authReady, setAuthReady] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -230,6 +330,7 @@ export function useBeenToLocations() {
   const loadingRef = useRef(false);
   const locationsRef = useRef<BeenToLocationWithImage[]>([]);
   const versionRef = useRef<string | null>(null);
+  const isProfileMode = Boolean(profile);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -242,6 +343,10 @@ export function useBeenToLocations() {
 
   const persistCache = useCallback(
     (nextLocations: BeenToLocationWithImage[], nextHasMore: boolean, nextCursorId: string | null) => {
+      if (isProfileMode) {
+        return;
+      }
+
       if (!versionRef.current) {
         return;
       }
@@ -254,11 +359,56 @@ export function useBeenToLocations() {
         version: versionRef.current,
       });
     },
-    [],
+    [isProfileMode],
   );
+
+  const fetchPublicPreview = useCallback(async () => {
+    if (!profile) {
+      return;
+    }
+
+    loadingRef.current = true;
+    setError(null);
+    setInitialLoading(true);
+
+    try {
+      const previewQuery = query(
+        collection(db, "publicProfiles", profile.username, "topImages"),
+        orderBy("rank"),
+        limit(PUBLIC_PREVIEW_SIZE),
+      );
+      const snapshot = await getDocs(previewQuery);
+      const previewLocations = snapshot.docs
+        .map((snapshotDoc) =>
+          toPublicPreviewLocation(
+            snapshotDoc.id,
+            snapshotDoc.data() as PublicTopImageDoc,
+          ),
+        )
+        .filter((location): location is BeenToLocationWithImage => Boolean(location));
+
+      cursorIdRef.current = null;
+      hasMoreRef.current = false;
+      locationsRef.current = previewLocations;
+      setLocations(previewLocations);
+      setHasMore(false);
+    } catch (fetchError) {
+      console.error("Failed to load public Been-To-Box preview", fetchError);
+      setError("This public Been-To-Box preview could not be loaded right now.");
+    } finally {
+      setInitialLoading(false);
+      setLoadingMore(false);
+      loadingRef.current = false;
+    }
+  }, [profile]);
 
   const fetchNextPage = useCallback(async () => {
     if (loadingRef.current || !hasMoreRef.current) {
+      return;
+    }
+
+    if (profile && !currentUser) {
+      await fetchPublicPreview();
       return;
     }
 
@@ -274,15 +424,17 @@ export function useBeenToLocations() {
     }
 
     try {
+      const profileUid = profile?.uid ?? null;
+      const locationCollection = getLocationCollection(profileUid);
       const locationQuery = cursorIdRef.current
         ? query(
-            collection(db, "locations"),
+            locationCollection,
             orderBy(documentId()),
             startAfter(cursorIdRef.current),
             limit(PAGE_SIZE),
           )
         : query(
-            collection(db, "locations"),
+            locationCollection,
             orderBy(documentId()),
             limit(PAGE_SIZE),
           );
@@ -293,10 +445,15 @@ export function useBeenToLocations() {
       }));
       const bentoInfoByLocationId = await fetchBentoInfoByLocationId(
         baseLocations.map((location) => location.id),
+        profileUid,
       );
       const enrichedLocations = await Promise.all(
         baseLocations.map((location) =>
-          enrichLocation(location, bentoInfoByLocationId[location.id]),
+          enrichLocation(
+            location,
+            bentoInfoByLocationId[location.id],
+            profileUid,
+          ),
         ),
       );
       const locationsWithImages = enrichedLocations.filter(hasHeroImage);
@@ -323,21 +480,25 @@ export function useBeenToLocations() {
       setLoadingMore(false);
       loadingRef.current = false;
     }
-  }, [persistCache]);
+  }, [currentUser, fetchPublicPreview, persistCache, profile]);
 
   useEffect(() => {
     let isMounted = true;
 
     const hydrateOrFetch = async () => {
+      if (profile && !authReady) {
+        return;
+      }
+
       try {
         setInitialLoading(true);
-        const version = await fetchLocationsVersion();
+        const version = profile ? null : await fetchLocationsVersion();
 
         if (!isMounted) {
           return;
         }
 
-        if (version) {
+        if (!profile && version) {
           versionRef.current = version;
           const cache = readLocationsCache(version);
 
@@ -378,9 +539,9 @@ export function useBeenToLocations() {
     return () => {
       isMounted = false;
     };
-  }, [fetchNextPage]);
+  }, [authReady, currentUser, fetchNextPage, profile]);
 
-  const isAuthenticated = DEV_AUTH_BYPASS || Boolean(currentUser);
+  const isAuthenticated = Boolean(currentUser);
   const primaryLocations = useMemo(
     () => locations.slice(0, PAGE_SIZE),
     [locations],
@@ -393,15 +554,17 @@ export function useBeenToLocations() {
 
   return {
     archiveLocations,
-    authReady: DEV_AUTH_BYPASS || authReady,
+    authReady,
     error,
     hasMore,
     initialLoading,
     isAuthenticated,
+    isPublicPreview: Boolean(profile && authReady && !currentUser),
     loadingMore,
     loadMore: fetchNextPage,
     locations,
     primaryLocations,
+    profile,
     stats,
   };
 }

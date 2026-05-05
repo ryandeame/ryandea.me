@@ -7,14 +7,23 @@ import { useParams, useRouter } from 'next/navigation';
 import { db } from '@/lib/firebase';
 import BeenToBoxCarouselOverlay from '@/components/been-to/BeenToBoxCarouselOverlay';
 
-export default function BeenToBoxCityPage() {
+const COVER_UPDATED_KEY = 'been-to-box:cover-updated';
+
+/**
+ * @param {{ backHref?: string, locationSlug?: string, profileUid?: string }=} props
+ */
+export default function BeenToBoxCityPage({
+  backHref = '/been-to-box',
+  locationSlug: locationSlugProp,
+  profileUid,
+} = {}) {
   const params = useParams();
   const router = useRouter();
   const [overlayCity, setOverlayCity] = useState(null);
   const [currentSlide, setCurrentSlide] = useState(0);
 
   useEffect(() => {
-    const citySlug = params?.slug;
+    const citySlug = locationSlugProp ?? params?.locationSlug ?? params?.slug;
 
     if (typeof citySlug !== 'string' || citySlug.length === 0) {
       return;
@@ -22,18 +31,22 @@ export default function BeenToBoxCityPage() {
 
     const fetchCityData = async () => {
       try {
-        const locationsCol = collection(db, 'locations');
+        const locationsCol = profileUid
+          ? collection(db, 'users', profileUid, 'locations')
+          : collection(db, 'locations');
         const cityQuery = query(locationsCol, where('slug', '==', citySlug));
         const querySnapshot = await getDocs(cityQuery);
 
         if (querySnapshot.empty) {
-          router.push('/been-to-box');
+          router.push(backHref);
           return;
         }
 
         const cityDoc = querySnapshot.docs[0];
         const cityData = { id: cityDoc.id, ...cityDoc.data() };
-        const imagesColRef = collection(db, 'locations', cityDoc.id, 'images');
+        const imagesColRef = profileUid
+          ? collection(db, 'users', profileUid, 'locations', cityDoc.id, 'images')
+          : collection(db, 'locations', cityDoc.id, 'images');
         const imageSnapshot = await getDocs(imagesColRef);
         const imageData = imageSnapshot.docs.map((doc) => ({
           id: doc.id,
@@ -67,24 +80,33 @@ export default function BeenToBoxCityPage() {
         setCurrentSlide(0);
       } catch (error) {
         console.error('Failed to load Been-To-Box city', error);
-        router.push('/been-to-box');
+        router.push(backHref);
       }
     };
 
     fetchCityData();
-  }, [params, router]);
+  }, [backHref, locationSlugProp, params, profileUid, router]);
 
   return (
     <BeenToBoxCarouselOverlay
       overlayCity={overlayCity}
       currentSlide={currentSlide}
       handleClose={() => {
+        const shouldRefreshBackPage =
+          window.sessionStorage.getItem(COVER_UPDATED_KEY) === '1';
+
+        if (shouldRefreshBackPage) {
+          window.sessionStorage.removeItem(COVER_UPDATED_KEY);
+          window.location.assign(backHref);
+          return;
+        }
+
         if (window.history.length > 1) {
           router.back();
           return;
         }
 
-        router.push('/been-to-box');
+        router.push(backHref);
       }}
       onSlideChange={setCurrentSlide}
     />

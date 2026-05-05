@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import { requireFirebaseRequestUser, type FirebaseRequestUser } from "@/lib/firebase-auth-server";
 import { getFirebaseAdmin } from "@/lib/firebase-admin";
 
 export const runtime = "nodejs";
@@ -38,25 +39,10 @@ function getUploadFileName(fileName: string) {
     : `${randomUUID()}.jpg`;
 }
 
-async function assertAuthorized(req: Request) {
-  if (process.env.NODE_ENV === "development") {
-    return;
-  }
-
-  const authHeader = req.headers.get("authorization");
-  const token = authHeader?.startsWith("Bearer ")
-    ? authHeader.slice("Bearer ".length)
-    : null;
-
-  if (!token) {
-    throw new Error("Missing auth token");
-  }
-
-  const { adminAuth } = getFirebaseAdmin();
-  await adminAuth.verifyIdToken(token);
-}
-
-async function getLocationTarget(formValues: z.infer<typeof uploadSchema>) {
+async function getLocationTarget(
+  formValues: z.infer<typeof uploadSchema>,
+  user: FirebaseRequestUser,
+) {
   const { adminDb, fieldValue } = getFirebaseAdmin();
 
   if (formValues.locationId) {
@@ -89,9 +75,13 @@ async function getLocationTarget(formValues: z.infer<typeof uploadSchema>) {
   await locationRef.set(
     {
       country: formValues.country,
+      createdByUid: user.uid,
       name,
+      ownerUid: user.uid,
       slug,
       updatedAt: fieldValue.serverTimestamp(),
+      updatedByUid: user.uid,
+      userIds: fieldValue.arrayUnion(user.uid),
     },
     { merge: true },
   );
@@ -105,7 +95,7 @@ async function getLocationTarget(formValues: z.infer<typeof uploadSchema>) {
 
 export async function POST(req: Request) {
   try {
-    await assertAuthorized(req);
+    const user = await requireFirebaseRequestUser(req);
 
     const formData = await req.formData();
     const formValues = uploadSchema.parse({
@@ -126,8 +116,20 @@ export async function POST(req: Request) {
 
     const { adminDb, fieldValue, getAdminStorageBucket } = getFirebaseAdmin();
     const adminStorageBucket = getAdminStorageBucket();
-    const location = await getLocationTarget(formValues);
+    const location = await getLocationTarget(formValues, user);
     const uploadedImages = [];
+
+    await adminDb
+      .collection("locations")
+      .doc(location.id)
+      .set(
+        {
+          lastContributedAt: fieldValue.serverTimestamp(),
+          lastContributedByUid: user.uid,
+          userIds: fieldValue.arrayUnion(user.uid),
+        },
+        { merge: true },
+      );
 
     for (const file of files) {
       const fileName = getUploadFileName(file.name);
@@ -157,8 +159,12 @@ export async function POST(req: Request) {
         fileName,
         imageDate: fieldValue.serverTimestamp(),
         originalFileName: file.name,
+        ownerUid: user.uid,
         size: bytes.length,
         storagePath,
+        uploadedByEmail: user.email ?? "",
+        uploadedByName: user.name ?? "",
+        uploadedByUid: user.uid,
       });
 
       uploadedImages.push({
@@ -177,6 +183,7 @@ export async function POST(req: Request) {
         {
           imageCount: fieldValue.increment(uploadedImages.length),
           updatedAt: fieldValue.serverTimestamp(),
+          updatedByUid: user.uid,
         },
         { merge: true },
       );
@@ -189,6 +196,7 @@ export async function POST(req: Request) {
           locationsVersion: fieldValue.increment(1),
           updatedAt: fieldValue.serverTimestamp(),
           updatedBy: "app/api/been-to-box/photos",
+          updatedByUid: user.uid,
         },
         { merge: true },
       );

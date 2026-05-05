@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import { requireFirebaseRequestUser } from "@/lib/firebase-auth-server";
 import { getFirebaseAdmin } from "@/lib/firebase-admin";
 
 export const runtime = "nodejs";
@@ -16,27 +17,9 @@ const coverPhotoSchema = z.object({
   locationId: z.string().min(1),
 });
 
-async function assertAuthorized(req: Request) {
-  if (process.env.NODE_ENV === "development") {
-    return;
-  }
-
-  const authHeader = req.headers.get("authorization");
-  const token = authHeader?.startsWith("Bearer ")
-    ? authHeader.slice("Bearer ".length)
-    : null;
-
-  if (!token) {
-    throw new Error("Missing auth token");
-  }
-
-  const { adminAuth } = getFirebaseAdmin();
-  await adminAuth.verifyIdToken(token);
-}
-
 export async function POST(req: Request) {
   try {
-    await assertAuthorized(req);
+    const user = await requireFirebaseRequestUser(req);
 
     const body = await req.json();
     const { image, locationId } = coverPhotoSchema.parse(body);
@@ -47,36 +30,119 @@ export async function POST(req: Request) {
       coverImageWidth && coverImageHeight
         ? coverImageWidth / coverImageHeight
         : null;
-
-    await adminDb
+    const userLocationRef = adminDb
+      .collection("users")
+      .doc(user.uid)
       .collection("locations")
-      .doc(locationId)
+      .doc(locationId);
+    const userLocationSnapshot = await userLocationRef.get();
+
+    if (!userLocationSnapshot.exists) {
+      return NextResponse.json(
+        { ok: false, error: "Location not found for this user" },
+        { status: 404 },
+      );
+    }
+
+    const imageSnapshot = await userLocationRef
+      .collection("images")
+      .doc(image.id)
+      .get();
+
+    if (!imageSnapshot.exists) {
+      return NextResponse.json(
+        { ok: false, error: "Image not found for this location" },
+        { status: 404 },
+      );
+    }
+
+    const imageData = imageSnapshot.data() ?? {};
+    const imageDownloadURL =
+      typeof imageData.downloadURL === "string" && imageData.downloadURL
+        ? imageData.downloadURL
+        : image.downloadURL;
+    const imageStoragePath =
+      typeof imageData.storagePath === "string" && imageData.storagePath
+        ? imageData.storagePath
+        : image.storagePath ?? "";
+    const existingBentoInfoSnapshot = await userLocationRef
+      .collection("meta")
+      .doc("bento-info")
+      .get();
+    const existingBentoInfo = existingBentoInfoSnapshot.exists
+      ? existingBentoInfoSnapshot.data()
+      : {};
+    const imageCount = Number.isFinite(existingBentoInfo?.imageCount)
+      ? Number(existingBentoInfo?.imageCount)
+      : null;
+
+    await userLocationRef
       .collection("meta")
       .doc("bento-info")
       .set(
         {
           coverImageHeight,
           coverImageId: image.id,
-          coverImagePath: image.storagePath ?? "",
+          coverImagePath: imageStoragePath,
           coverImageRatio,
-          coverImageUrl: image.downloadURL,
+          coverImageUrl: imageDownloadURL,
           coverImageWidth,
           updatedAt: fieldValue.serverTimestamp(),
+          updatedByUid: user.uid,
         },
         { merge: true },
       );
 
     await adminDb
-      .collection("appMetadata")
-      .doc("beenToBox")
+      .collection("users")
+      .doc(user.uid)
       .set(
         {
           locationsVersion: fieldValue.increment(1),
           updatedAt: fieldValue.serverTimestamp(),
           updatedBy: "app/api/been-to-box/cover-photo",
+          updatedByUid: user.uid,
         },
         { merge: true },
       );
+
+    const userSnapshot = await adminDb.collection("users").doc(user.uid).get();
+    const username = userSnapshot.exists ? userSnapshot.data()?.username : "";
+
+    if (typeof username === "string" && username) {
+      const publicTopImageSnapshot = await adminDb
+        .collection("publicProfiles")
+        .doc(username)
+        .collection("topImages")
+        .where("locationId", "==", locationId)
+        .limit(1)
+        .get();
+      const locationData = userLocationSnapshot.data() ?? {};
+
+      if (!publicTopImageSnapshot.empty) {
+        await publicTopImageSnapshot.docs[0].ref.set(
+          {
+            downloadURL: imageDownloadURL,
+            height: coverImageHeight,
+            imageCount,
+            imageId: image.id,
+            locationCountry:
+              typeof locationData.country === "string" ? locationData.country : "",
+            locationName:
+              typeof locationData.name === "string"
+                ? locationData.name
+                : locationId,
+            locationSlug:
+              typeof locationData.slug === "string" ? locationData.slug : locationId,
+            photoCount: imageCount,
+            storagePath: imageStoragePath,
+            updatedAt: fieldValue.serverTimestamp(),
+            width: coverImageWidth,
+          },
+          { merge: true },
+        );
+      }
+    }
 
     return NextResponse.json({ ok: true });
   } catch (error) {

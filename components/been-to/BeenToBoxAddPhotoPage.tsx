@@ -5,7 +5,8 @@ import { ChangeEvent, DragEvent, FormEvent, useEffect, useState } from "react";
 import { collection, getDocs, orderBy, query } from "firebase/firestore";
 import { ArrowLeft, ChevronDown, ImagePlus, Loader2, MapPin, UploadCloud, X } from "lucide-react";
 
-import { auth, db } from "@/lib/firebase";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { db } from "@/lib/firebase";
 
 const CACHE_KEY = "been-to-box:locations-cache:v1";
 const DIMENSION_CACHE_KEY = "been-to-box:image-dimensions:v2";
@@ -115,6 +116,7 @@ async function loadLocationsFromClient() {
 }
 
 export default function BeenToBoxAddPhotoPage() {
+  const { getFreshIdToken, loading: authLoading, user } = useAuth();
   const [city, setCity] = useState("");
   const [country, setCountry] = useState("");
   const [existingLocations, setExistingLocations] = useState<ExistingLocation[]>([]);
@@ -248,6 +250,11 @@ export default function BeenToBoxAddPhotoPage() {
       return;
     }
 
+    if (!user) {
+      setMessage("Sign in before adding photos.");
+      return;
+    }
+
     if (!locationId && (!city.trim() || !country.trim())) {
       setMessage("Pick a location or enter a city and country.");
       return;
@@ -256,8 +263,12 @@ export default function BeenToBoxAddPhotoPage() {
     setSubmitting(true);
 
     try {
-      const user = auth.currentUser;
-      const token = user ? await user.getIdToken() : null;
+      const token = await getFreshIdToken();
+
+      if (!token) {
+        throw new Error("Sign in before adding photos.");
+      }
+
       const formData = new FormData();
 
       formData.set("locationId", locationId);
@@ -267,7 +278,7 @@ export default function BeenToBoxAddPhotoPage() {
 
       const response = await fetch("/api/been-to-box/photos", {
         body: formData,
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        headers: { Authorization: `Bearer ${token}` },
         method: "POST",
       });
       const payload = await response.json().catch(() => null);
@@ -320,6 +331,31 @@ export default function BeenToBoxAddPhotoPage() {
             </div>
 
             <form className="mt-8 grid gap-6" onSubmit={handleSubmit}>
+              {!authLoading && !user ? (
+                <div className="rounded-[2rem] border-4 border-[#24110c] bg-[#facc15] p-5 shadow-[0_10px_0_rgba(36,17,12,0.18)]">
+                  <p className="text-xl font-black">
+                    Sign in to add photos to Been-To-Box.
+                  </p>
+                  <p className="mt-2 text-sm font-bold text-[#8f1110]/75">
+                    New uploads are saved with your Firebase user ID so the database can track ownership and contributions.
+                  </p>
+                  <div className="mt-4 flex flex-wrap gap-3">
+                    <Link
+                      className="rounded-full bg-[#24110c] px-5 py-3 text-sm font-black uppercase tracking-[0.16em] text-[#fff4cf]"
+                      href="/sign-in?redirect=/been-to-box/add-photo"
+                    >
+                      Sign in
+                    </Link>
+                    <Link
+                      className="rounded-full border-2 border-[#24110c]/20 bg-[#f97316] px-5 py-3 text-sm font-black uppercase tracking-[0.16em] text-white"
+                      href="/sign-up?redirect=/been-to-box/add-photo"
+                    >
+                      Create account
+                    </Link>
+                  </div>
+                </div>
+              ) : null}
+
               <div className="grid gap-4">
                 <div className="grid gap-3 rounded-[2rem] border-2 border-[#24110c]/15 bg-[linear-gradient(135deg,#f97316_0%,#facc15_42%,#14b8a6_100%)] p-1 shadow-[0_12px_0_rgba(36,17,12,0.16)]">
                   <div className="rounded-[1.75rem] bg-[#fff4cf]/95 p-4">
@@ -480,7 +516,7 @@ export default function BeenToBoxAddPhotoPage() {
 
               <button
                 className="rounded-full bg-[#8f1110] px-7 py-4 text-sm font-black uppercase tracking-[0.18em] text-[#fff4cf] shadow-[0_9px_0_rgba(36,17,12,0.22)] disabled:opacity-60"
-                disabled={preparing || submitting}
+                disabled={authLoading || !user || preparing || submitting}
                 type="submit"
               >
                 {submitting ? "Uploading..." : "Add photos"}
