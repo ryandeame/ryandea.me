@@ -47,23 +47,11 @@ export default function Overlay({
       }));
     }
 
-    if (!carouselRef.current) {
-      return [];
-    }
-
-    const slideWidth = window.innerWidth > 1428 ? 400 : window.innerWidth * 0.28;
-    const slideMargin = window.innerWidth * 0.02;
-    const rect = carouselRef.current.getBoundingClientRect();
-    const styles = getComputedStyle(carouselRef.current);
-    const contentLeft =
-      rect.left +
-      carouselRef.current.clientLeft +
-      (parseFloat(styles.paddingLeft) || 0);
-    const contentWidth =
-      carouselRef.current.clientWidth -
-      (parseFloat(styles.paddingLeft) || 0) -
-      (parseFloat(styles.paddingRight) || 0);
-    const centerLeft = contentLeft + contentWidth / 2 - slideWidth / 2;
+    const viewportWidth =
+      typeof window !== 'undefined' ? window.innerWidth : 1440;
+    const slideWidth = viewportWidth > 1428 ? 400 : viewportWidth * 0.28;
+    const slideMargin = viewportWidth * 0.02;
+    const centerLeft = viewportWidth / 2 - slideWidth / 2;
 
     const slides = [];
 

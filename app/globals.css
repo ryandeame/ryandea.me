@@ -95,3 +95,76 @@ body {
     box-shadow: 0 0 20px rgba(99, 102, 241, 0.6), 0 0 40px rgba(59, 130, 246, 0.4);
   }
 }
+
+@keyframes been-to-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes been-to-orbit {
+  to {
+    transform: rotate(360deg) translateX(5.7rem);
+  }
+}
+
+@keyframes been-to-pulse-ring {
+  0%,
+  100% {
+    transform: scale(0.92);
+    opacity: 0.9;
+  }
+
+  50% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+}
+
+@keyframes been-to-float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  50% {
+    transform: translate3d(0, -16px, 0) scale(1.04);
+  }
+}
+
+@keyframes been-to-stat-bob {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+
+  50% {
+    transform: translateY(-8px) scale(1.03);
+  }
+}
+
+@keyframes been-to-card-in {
+  0% {
+    opacity: 0;
+    transform: translateY(18px) scale(0.96);
+    filter: blur(8px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes been-to-compartment-row-in {
+  0% {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

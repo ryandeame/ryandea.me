@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { Suspense, useEffect, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
@@ -65,6 +66,12 @@ export default function TravelPage() {
         <p className="mt-3 max-w-sm text-sm leading-relaxed text-white/65 md:text-base">
           Spin the globe, open clusters, and jump into city galleries.
         </p>
+        <Link
+          href="/travel-highlights"
+          className="pointer-events-auto mt-5 inline-flex rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] text-white transition-colors hover:bg-white hover:text-black"
+        >
+          Open curated page
+        </Link>
       </div>
 
       <Suspense fallback={null}>
