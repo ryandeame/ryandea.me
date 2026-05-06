@@ -1,9 +1,6 @@
 import type { Metadata } from "next";
 
-import BeenToBoxCityPage from "@/components/been-to/BeenToBoxCityPage";
-import { getPublicBeenToBoxProfile } from "@/lib/public-profiles";
-
-export const runtime = "nodejs";
+import BeenToBoxProfileLocationRoutePage from "@/components/been-to/BeenToBoxProfileLocationRoutePage";
 
 type PageProps = {
   params: Promise<{
@@ -14,28 +11,19 @@ type PageProps = {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { locationSlug, slug } = await params;
-  const profile = await getPublicBeenToBoxProfile(slug);
 
   return {
-    title: profile
-      ? `${profile.displayName} | ${locationSlug} | Been-To-Box`
-      : "Been-To-Box Gallery | Ryan Deame",
+    title: `${slug} | ${locationSlug} | Been-To-Box`,
   };
 }
 
 export default async function BeenToBoxProfileLocationPage({ params }: PageProps) {
   const { locationSlug, slug } = await params;
-  const profile = await getPublicBeenToBoxProfile(slug);
-
-  if (!profile) {
-    return <BeenToBoxCityPage locationSlug={locationSlug} />;
-  }
 
   return (
-    <BeenToBoxCityPage
-      backHref={`/been-to-box/${profile.username}`}
+    <BeenToBoxProfileLocationRoutePage
       locationSlug={locationSlug}
-      profileUid={profile.uid}
+      slug={slug}
     />
   );
 }

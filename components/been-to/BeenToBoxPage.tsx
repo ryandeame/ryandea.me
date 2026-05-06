@@ -437,6 +437,7 @@ function DestinationCompartment({
         sizes="(min-width: 1024px) 33vw, 100vw"
         className="object-cover transition-transform duration-700 group-hover:scale-105"
         style={{ objectPosition: destination.objectPosition }}
+        unoptimized={destination.image.startsWith("http")}
       />
       <div className="absolute inset-0 bg-gradient-to-t from-[#1d0806]/92 via-[#1d0806]/22 to-transparent" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.22),transparent_28%)] opacity-80" />

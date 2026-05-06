@@ -78,10 +78,47 @@ function normalizeStorageBucketName(bucketName: string | null | undefined) {
   return withoutProtocol.split("/")[0] || null;
 }
 
+function getFirebaseRuntimeConfig() {
+  const rawFirebaseConfig = process.env.FIREBASE_CONFIG;
+
+  if (!rawFirebaseConfig) {
+    return {};
+  }
+
+  try {
+    const configJson = rawFirebaseConfig.trim().startsWith("{")
+      ? rawFirebaseConfig
+      : fs.existsSync(rawFirebaseConfig)
+        ? fs.readFileSync(rawFirebaseConfig, "utf8")
+        : "";
+
+    if (!configJson) {
+      return {};
+    }
+
+    const config = JSON.parse(configJson) as {
+      projectId?: unknown;
+      storageBucket?: unknown;
+    };
+
+    return {
+      projectId: typeof config.projectId === "string" ? config.projectId : null,
+      storageBucket:
+        typeof config.storageBucket === "string" ? config.storageBucket : null,
+    };
+  } catch (configError) {
+    console.warn("Failed to read FIREBASE_CONFIG for Admin SDK initialization", configError);
+    return {};
+  }
+}
+
 function getStorageBucketName() {
+  const runtimeConfig = getFirebaseRuntimeConfig();
+
   return normalizeStorageBucketName(
     process.env.FIREBASE_STORAGE_BUCKET ||
     process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET ||
+    runtimeConfig.storageBucket ||
     getScriptFirebaseEnvValue("FIREBASE_STORAGE_BUCKET") ||
     getScriptFirebaseEnvValue("NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET"),
   );
@@ -111,6 +148,34 @@ function getServiceAccountObject() {
   return null;
 }
 
+function getServiceAccountProjectId(serviceAccountObject: Record<string, unknown> | null) {
+  if (!serviceAccountObject) {
+    return null;
+  }
+
+  if (typeof serviceAccountObject.projectId === "string") {
+    return serviceAccountObject.projectId;
+  }
+
+  if (typeof serviceAccountObject.project_id === "string") {
+    return serviceAccountObject.project_id;
+  }
+
+  return null;
+}
+
+function getProjectId(serviceAccountObject: Record<string, unknown> | null) {
+  const runtimeConfig = getFirebaseRuntimeConfig();
+
+  return (
+    process.env.FIREBASE_PROJECT_ID ||
+    process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ||
+    runtimeConfig.projectId ||
+    getServiceAccountProjectId(serviceAccountObject) ||
+    null
+  );
+}
+
 function getFirebaseAdminApp(): App {
   const existingApp = getApps()[0];
 
@@ -123,10 +188,12 @@ function getFirebaseAdminApp(): App {
   const credential = serviceAccountObject || serviceAccountPath
     ? cert(serviceAccountObject ?? serviceAccountPath ?? "")
     : applicationDefault();
+  const projectId = getProjectId(serviceAccountObject);
   const storageBucket = getStorageBucketName();
 
   return initializeApp({
     credential,
+    ...(projectId ? { projectId } : {}),
     ...(storageBucket ? { storageBucket } : {}),
   });
 }

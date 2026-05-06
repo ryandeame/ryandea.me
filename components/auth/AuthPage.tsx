@@ -4,11 +4,19 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import type { User } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
 import { ArrowLeft, Loader2, LockKeyhole, Mail, Send, Sparkles } from "lucide-react";
 
 import { EMAIL_LINK_STORAGE_KEY, useAuth } from "@/components/auth/AuthProvider";
+import { readJsonResponse } from "@/lib/api-response";
+import { db } from "@/lib/firebase";
 
 type AuthMode = "sign-in" | "sign-up";
+type UsernamePayload = {
+  profile?: {
+    username?: unknown;
+  };
+};
 
 const authCopy = {
   "sign-in": {
@@ -75,6 +83,22 @@ function getSafeRedirect(value: string | null) {
 }
 
 async function getSignedInProfileRedirect(user: User) {
+  const apiUsername = await getSignedInUsernameFromApi(user);
+
+  if (apiUsername) {
+    return `/been-to-box/${apiUsername}`;
+  }
+
+  const firestoreUsername = await getSignedInUsernameFromFirestore(user);
+
+  if (firestoreUsername) {
+    return `/been-to-box/${firestoreUsername}`;
+  }
+
+  return "/profile";
+}
+
+async function getSignedInUsernameFromApi(user: User) {
   try {
     const token = await user.getIdToken();
     const response = await fetch("/api/auth/username", {
@@ -82,17 +106,32 @@ async function getSignedInProfileRedirect(user: User) {
         Authorization: `Bearer ${token}`,
       },
     });
-    const payload = await response.json().catch(() => null);
+    const payload = await readJsonResponse<UsernamePayload>(
+      response,
+      "Could not resolve signed-in profile",
+    ).catch(() => null);
     const username = payload?.profile?.username;
 
     if (typeof username === "string" && username.length > 0) {
-      return `/been-to-box/${username}`;
+      return username;
     }
   } catch (profileError) {
     console.warn("Could not resolve signed-in profile redirect", profileError);
   }
 
-  return "/profile";
+  return null;
+}
+
+async function getSignedInUsernameFromFirestore(user: User) {
+  try {
+    const profileSnapshot = await getDoc(doc(db, "users", user.uid));
+    const username = profileSnapshot.data()?.username;
+
+    return typeof username === "string" && username.length > 0 ? username : null;
+  } catch (profileError) {
+    console.warn("Could not resolve signed-in profile from Firestore", profileError);
+    return null;
+  }
 }
 
 export default function AuthPage({ mode }: { mode: AuthMode }) {

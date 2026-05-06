@@ -1,13 +1,20 @@
 import { NextResponse } from "next/server";
 
+import { requireFirebaseRequestUser } from "@/lib/firebase-auth-server";
 import { getFirebaseAdmin } from "@/lib/firebase-admin";
 
 export const runtime = "nodejs";
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
+    const user = await requireFirebaseRequestUser(req);
     const { adminDb } = getFirebaseAdmin();
-    const snapshot = await adminDb.collection("locations").orderBy("name").get();
+    const snapshot = await adminDb
+      .collection("users")
+      .doc(user.uid)
+      .collection("locations")
+      .orderBy("name")
+      .get();
     const locations = snapshot.docs.map((doc) => {
       const data = doc.data();
 
@@ -22,6 +29,13 @@ export async function GET() {
     return NextResponse.json({ ok: true, locations });
   } catch (error) {
     console.error("[been-to-box locations] failed to load", error);
+
+    if (error instanceof Error && error.message === "Missing auth token") {
+      return NextResponse.json(
+        { ok: false, error: "Authentication is required" },
+        { status: 401 },
+      );
+    }
 
     return NextResponse.json(
       { ok: false, error: "Unable to load locations" },

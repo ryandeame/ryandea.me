@@ -7,7 +7,10 @@
     "ignore": [
       "firebase.json",
       "**/.*",
-      "**/node_modules/**"
+      "**/node_modules/**",
+      "scripts/**",
+      "worktrees/**",
+      "new_3D/**"
     ],
     "frameworksBackend": {
       "region": "us-central1"

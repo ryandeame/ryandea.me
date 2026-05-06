@@ -258,7 +258,9 @@ export default function BeenToBoxCarouselOverlay({
                   </h2>
                   {error ? (
                     <p className="mt-4 rounded-2xl bg-[#8f1110] px-4 py-3 text-sm font-bold text-[#fff4cf]">
-                      Could not update the cover photo. Check Firebase permissions and try again.
+                      {error instanceof Error
+                        ? error.message
+                        : 'Could not update the cover photo. Check Firebase permissions and try again.'}
                     </p>
                   ) : null}
                   <div className="mt-6 flex flex-wrap justify-center gap-3">

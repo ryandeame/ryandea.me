@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { Search, FileText, RefreshCw } from "lucide-react";
 import ProductBackground from "./ProductBackground";
-import { useRef, useState, useEffect } from "react";
+import { useRef } from "react";
 
 const products = [
     {
@@ -31,15 +31,10 @@ const products = [
 
 export default function Products() {
     const containerRef = useRef<HTMLElement>(null);
-    const [isMounted, setIsMounted] = useState(false);
-
-    useEffect(() => {
-        setIsMounted(true);
-    }, []);
 
     return (
         <section ref={containerRef} id="products" className="py-32 px-4 relative overflow-hidden w-full h-full">
-            {isMounted && <ProductBackground />}
+            <ProductBackground />
 
             <div className="max-w-7xl mx-auto relative z-10">
                 <motion.div

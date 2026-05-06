@@ -6,6 +6,7 @@ import { collection, getDocs, orderBy, query } from "firebase/firestore";
 import { ArrowLeft, ChevronDown, ImagePlus, Loader2, MapPin, UploadCloud, X } from "lucide-react";
 
 import { useAuth } from "@/components/auth/AuthProvider";
+import { readJsonResponse } from "@/lib/api-response";
 import { db } from "@/lib/firebase";
 
 const CACHE_KEY = "been-to-box:locations-cache:v1";
@@ -100,8 +101,15 @@ function isJpegFile(file: File) {
   return file.type === "image/jpeg" || fileName.endsWith(".jpg") || fileName.endsWith(".jpeg");
 }
 
-async function loadLocationsFromClient() {
-  const snapshot = await getDocs(query(collection(db, "locations"), orderBy("name")));
+type LocationsPayload = {
+  locations: ExistingLocation[];
+  ok: boolean;
+};
+
+async function loadLocationsFromClient(userId: string) {
+  const snapshot = await getDocs(
+    query(collection(db, "users", userId, "locations"), orderBy("name")),
+  );
 
   return snapshot.docs.map((doc) => {
     const data = doc.data();
@@ -132,21 +140,38 @@ export default function BeenToBoxAddPhotoPage() {
     let isMounted = true;
 
     const loadLocations = async () => {
-      try {
-        const response = await fetch("/api/been-to-box/locations");
-        const payload = await response.json();
+      if (authLoading) {
+        return;
+      }
 
-        if (isMounted && Array.isArray(payload.locations)) {
-          setExistingLocations(payload.locations);
-          return;
+      if (!user) {
+        setExistingLocations([]);
+        return;
+      }
+
+      try {
+        const token = await getFreshIdToken();
+
+        if (!token) {
+          throw new Error("Sign in to load your existing locations.");
         }
 
-        throw new Error(payload?.error ?? "Locations API did not return locations.");
+        const response = await fetch("/api/been-to-box/locations", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const payload = await readJsonResponse<LocationsPayload>(
+          response,
+          "Could not load existing locations",
+        );
+
+        if (isMounted) {
+          setExistingLocations(payload.locations);
+        }
       } catch (locationError) {
         console.warn("Could not load Been-To-Box locations", locationError);
 
         try {
-          const fallbackLocations = await loadLocationsFromClient();
+          const fallbackLocations = await loadLocationsFromClient(user.uid);
 
           if (isMounted) {
             setExistingLocations(fallbackLocations);
@@ -165,7 +190,7 @@ export default function BeenToBoxAddPhotoPage() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [authLoading, getFreshIdToken, user]);
 
   useEffect(
     () => () => {
@@ -281,11 +306,7 @@ export default function BeenToBoxAddPhotoPage() {
         headers: { Authorization: `Bearer ${token}` },
         method: "POST",
       });
-      const payload = await response.json().catch(() => null);
-
-      if (!response.ok) {
-        throw new Error(payload?.error ?? "Photo upload failed.");
-      }
+      await readJsonResponse(response, "Photo upload failed");
 
       window.localStorage.removeItem(CACHE_KEY);
       window.sessionStorage.removeItem(DIMENSION_CACHE_KEY);

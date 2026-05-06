@@ -11,7 +11,6 @@ export default function ProductBackground() {
     });
     const y1 = useTransform(scrollYProgress, [0, 1], [0, 200]);
     const y2 = useTransform(scrollYProgress, [0, 1], [0, -150]);
-    const y3 = useTransform(scrollYProgress, [0, 1], [0, 100]);
 
     return (
         <div ref={ref} className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none z-0">

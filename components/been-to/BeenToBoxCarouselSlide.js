@@ -92,6 +92,7 @@ export default function BeenToBoxCarouselSlide({
           className={`relative h-full w-full object-contain transition-opacity duration-300 ${
             loaded ? 'opacity-100' : 'opacity-0'
           }`}
+          unoptimized={imageSrc?.startsWith('http')}
           onClick={handleClick}
           onLoad={(event) => {
             setLoaded(true);

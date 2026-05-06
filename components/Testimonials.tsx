@@ -1,7 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
-
 const testimonials = [
     {
         quote: "TalentScout cut our hiring time in half. The automated curation is incredibly accurate.",
@@ -50,8 +48,11 @@ export default function Testimonials() {
                             key={i}
                             className="inline-block w-[400px] p-8 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm hover:bg-white/10 transition-colors whitespace-normal"
                         >
-                            <p className="text-lg text-gray-300 italic mb-6 leading-relaxed">"{t.quote}"</p>
+                            <p className="text-lg text-gray-300 italic mb-6 leading-relaxed">
+                                &ldquo;{t.quote}&rdquo;
+                            </p>
                             <div className="flex items-center gap-4">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img src={t.image} alt={t.author} className="w-12 h-12 rounded-full bg-white/10" />
                                 <div>
                                     <div className="font-bold text-white">{t.author}</div>

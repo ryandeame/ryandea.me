@@ -44,9 +44,13 @@ async function getLocationTarget(
   user: FirebaseRequestUser,
 ) {
   const { adminDb, fieldValue } = getFirebaseAdmin();
+  const userLocationsRef = adminDb
+    .collection("users")
+    .doc(user.uid)
+    .collection("locations");
 
   if (formValues.locationId) {
-    const locationSnapshot = await adminDb.collection("locations").doc(formValues.locationId).get();
+    const locationSnapshot = await userLocationsRef.doc(formValues.locationId).get();
 
     if (!locationSnapshot.exists) {
       throw new Error("Selected location does not exist");
@@ -70,7 +74,7 @@ async function getLocationTarget(
 
   const slug = slugify(`${formValues.city}-${formValues.country}`);
   const name = `${formValues.city}, ${formValues.country}`;
-  const locationRef = adminDb.collection("locations").doc(slug);
+  const locationRef = userLocationsRef.doc(slug);
 
   await locationRef.set(
     {
@@ -117,23 +121,22 @@ export async function POST(req: Request) {
     const { adminDb, fieldValue, getAdminStorageBucket } = getFirebaseAdmin();
     const adminStorageBucket = getAdminStorageBucket();
     const location = await getLocationTarget(formValues, user);
+    const userRef = adminDb.collection("users").doc(user.uid);
+    const locationRef = userRef.collection("locations").doc(location.id);
     const uploadedImages = [];
 
-    await adminDb
-      .collection("locations")
-      .doc(location.id)
-      .set(
-        {
-          lastContributedAt: fieldValue.serverTimestamp(),
-          lastContributedByUid: user.uid,
-          userIds: fieldValue.arrayUnion(user.uid),
-        },
-        { merge: true },
-      );
+    await locationRef.set(
+      {
+        lastContributedAt: fieldValue.serverTimestamp(),
+        lastContributedByUid: user.uid,
+        userIds: fieldValue.arrayUnion(user.uid),
+      },
+      { merge: true },
+    );
 
     for (const file of files) {
       const fileName = getUploadFileName(file.name);
-      const storagePath = `travel/${location.slug}/${fileName}`;
+      const storagePath = `users/${user.uid}/locations/${location.slug}/${fileName}`;
       const token = randomUUID();
       const bytes = Buffer.from(await file.arrayBuffer());
       const storageFile = adminStorageBucket.file(storagePath);
@@ -150,7 +153,7 @@ export async function POST(req: Request) {
       });
 
       const downloadURL = createDownloadUrl(adminStorageBucket.name, storagePath, token);
-      const imageRef = adminDb.collection("locations").doc(location.id).collection("images").doc();
+      const imageRef = locationRef.collection("images").doc();
 
       await imageRef.set({
         contentType: "image/jpeg",
@@ -174,9 +177,7 @@ export async function POST(req: Request) {
       });
     }
 
-    await adminDb
-      .collection("locations")
-      .doc(location.id)
+    await locationRef
       .collection("meta")
       .doc("bento-info")
       .set(
@@ -188,9 +189,7 @@ export async function POST(req: Request) {
         { merge: true },
       );
 
-    await adminDb
-      .collection("appMetadata")
-      .doc("beenToBox")
+    await userRef
       .set(
         {
           locationsVersion: fieldValue.increment(1),

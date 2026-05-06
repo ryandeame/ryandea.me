@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useCallback, useState } from "react";
+import { useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
@@ -12,13 +12,6 @@ interface VideoModalProps {
 }
 
 export default function VideoModal({ isOpen, videoId, onClose }: VideoModalProps) {
-    const [mounted, setMounted] = useState(false);
-
-    // Ensure we only render portal on client
-    useEffect(() => {
-        setMounted(true);
-    }, []);
-
     // Close on escape key
     const handleKeyDown = useCallback((e: KeyboardEvent) => {
         if (e.key === "Escape") {
@@ -89,7 +82,7 @@ export default function VideoModal({ isOpen, videoId, onClose }: VideoModalProps
     );
 
     // Use portal to render at document body level
-    if (!mounted) return null;
+    if (typeof document === "undefined") return null;
 
     return createPortal(modalContent, document.body);
 }

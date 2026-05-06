@@ -2,9 +2,13 @@
 
 import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useState } from "react";
+import type { User } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
 import { ArrowLeft, Check, Copy, Loader2, UserRound } from "lucide-react";
 
 import { useAuth } from "@/components/auth/AuthProvider";
+import { readJsonResponse } from "@/lib/api-response";
+import { db } from "@/lib/firebase";
 import { normalizeUsername, validateUsername } from "@/lib/usernames";
 
 type ProfilePayload = {
@@ -14,6 +18,30 @@ type ProfilePayload = {
   publicUrl: string;
   username: string;
 };
+type UsernamePayload = {
+  ok: boolean;
+  profile: ProfilePayload;
+};
+
+async function loadProfileFromFirestore(user: User): Promise<ProfilePayload | null> {
+  const profileSnapshot = await getDoc(doc(db, "users", user.uid));
+
+  if (!profileSnapshot.exists()) {
+    return null;
+  }
+
+  const data = profileSnapshot.data();
+  const username = typeof data.username === "string" ? data.username : "";
+
+  return {
+    displayName:
+      typeof data.displayName === "string" ? data.displayName : user.displayName ?? "",
+    email: typeof data.email === "string" ? data.email : user.email ?? "",
+    photoURL: typeof data.photoURL === "string" ? data.photoURL : user.photoURL ?? "",
+    publicUrl: username ? `${window.location.origin}/been-to-box/${username}` : "",
+    username,
+  };
+}
 
 export default function ProfileUsernamePage() {
   const { getFreshIdToken, loading: authLoading, user } = useAuth();
@@ -56,20 +84,32 @@ export default function ProfileUsernamePage() {
           throw new Error("Sign in to manage your username.");
         }
 
-        const response = await fetch("/api/auth/username", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        const payload = await response.json();
+        let profilePayload: ProfilePayload | null = null;
 
-        if (!response.ok) {
-          throw new Error(payload?.error ?? "Could not load profile.");
+        try {
+          const response = await fetch("/api/auth/username", {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          const payload = await readJsonResponse<UsernamePayload>(
+            response,
+            "Could not load profile",
+          );
+
+          profilePayload = payload.profile;
+        } catch (apiError) {
+          console.warn("Falling back to Firestore profile load", apiError);
+          profilePayload = await loadProfileFromFirestore(user);
+        }
+
+        if (!profilePayload) {
+          throw new Error("Could not load profile.");
         }
 
         if (isMounted) {
-          setProfile(payload.profile);
-          setUsername(payload.profile?.username ?? "");
+          setProfile(profilePayload);
+          setUsername(profilePayload.username ?? "");
         }
       } catch (profileError) {
         if (isMounted) {
@@ -121,11 +161,10 @@ export default function ProfileUsernamePage() {
         },
         method: "POST",
       });
-      const payload = await response.json();
-
-      if (!response.ok) {
-        throw new Error(payload?.error ?? "Could not save username.");
-      }
+      const payload = await readJsonResponse<UsernamePayload>(
+        response,
+        "Could not save username",
+      );
 
       setProfile((currentProfile) => ({
         displayName: currentProfile?.displayName ?? user?.displayName ?? "",

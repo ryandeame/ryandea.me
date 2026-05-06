@@ -23,7 +23,7 @@ export default function AuthStatusButton() {
 
   if (!user) {
     return (
-      <div className="fixed right-4 top-4 z-[1200] flex gap-2">
+      <div className="fixed left-4 top-4 z-[1200] flex gap-2">
         <Link
           className="rounded-full border-2 border-[#24110c]/15 bg-[#fff4cf] px-4 py-2 text-xs font-black uppercase tracking-[0.14em] text-[#24110c] shadow-[0_7px_0_rgba(36,17,12,0.12)]"
           href="/sign-in"
@@ -35,7 +35,7 @@ export default function AuthStatusButton() {
   }
 
   return (
-    <div className="fixed right-4 top-4 z-[1200]">
+    <div className="fixed left-4 top-4 z-[1200]">
       <button
         aria-expanded={menuOpen}
         aria-haspopup="menu"
@@ -54,7 +54,7 @@ export default function AuthStatusButton() {
 
       {menuOpen ? (
         <div
-          className="absolute right-0 mt-3 w-56 overflow-hidden rounded-[1.25rem] border-2 border-[#24110c]/15 bg-[#fff4cf] p-2 text-[#24110c] shadow-[0_18px_44px_rgba(36,17,12,0.2)]"
+          className="absolute left-0 mt-3 w-56 overflow-hidden rounded-[1.25rem] border-2 border-[#24110c]/15 bg-[#fff4cf] p-2 text-[#24110c] shadow-[0_18px_44px_rgba(36,17,12,0.2)]"
           role="menu"
         >
           <Link

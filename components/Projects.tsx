@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { Play, Github, ExternalLink } from "lucide-react";
 import ProductBackground from "./ProductBackground";
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState } from "react";
 import Image from "next/image";
 import { projects, Project } from "@/data/projects";
 
@@ -15,25 +15,14 @@ interface ProjectsProps {
 
 export default function Projects({ showBackground = true }: ProjectsProps) {
     const containerRef = useRef<HTMLElement>(null);
-    const [isMounted, setIsMounted] = useState(false);
-
-    useEffect(() => {
-        setIsMounted(true);
-    }, []);
-
-    // Track which videos are open by their videoId
-    const [videoStates, setVideoStates] = useState<Record<string, boolean>>({});
-
-    useEffect(() => {
-        // Initialize all videos as closed
-        const initialStates = projects.reduce((acc, project) => {
+    const [videoStates, setVideoStates] = useState<Record<string, boolean>>(() =>
+        projects.reduce((acc, project) => {
             if (project.videoId) {
                 acc[project.videoId] = false;
             }
             return acc;
-        }, {} as Record<string, boolean>);
-        setVideoStates(initialStates);
-    }, []);
+        }, {} as Record<string, boolean>),
+    );
 
     const openVideo = (videoId: string) => {
         setVideoStates(prev => ({ ...prev, [videoId]: true }));
@@ -45,7 +34,7 @@ export default function Projects({ showBackground = true }: ProjectsProps) {
 
     return (
         <section ref={containerRef} id="projects" className="py-32 px-4 relative overflow-hidden w-full h-full" style={{ position: 'relative' }}>
-            {showBackground && isMounted && <ProductBackground />}
+            {showBackground && <ProductBackground />}
 
             <div className="max-w-7xl mx-auto relative z-10">
                 <motion.div
