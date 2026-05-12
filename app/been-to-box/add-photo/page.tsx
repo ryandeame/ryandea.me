@@ -1,5 +1,5 @@
-import BeenToBoxAddPhotoPage from "@/components/been-to/BeenToBoxAddPhotoPage";
+import { notFound } from "next/navigation";
 
-export default function BeenToBoxAddPhotoRoutePage() {
-  return <BeenToBoxAddPhotoPage />;
+export default function BeenToBoxAddPhotoRouteDisabledPage() {
+  notFound();
 }

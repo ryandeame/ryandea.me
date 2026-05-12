@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { AuthProvider } from "@/components/auth/AuthProvider";
-import AuthStatusButton from "@/components/auth/AuthStatusButton";
 import CookieConsent from "@/components/CookieConsent";
 import "./globals.css";
 
@@ -85,11 +83,8 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased relative`}
         suppressHydrationWarning
       >
-        <AuthProvider>
-          {children}
-          <AuthStatusButton />
-          <CookieConsent />
-        </AuthProvider>
+        {children}
+        <CookieConsent />
       </body>
     </html>
   );

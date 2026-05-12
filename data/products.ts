@@ -15,6 +15,7 @@ export type ProductDetail = {
   tagline: string;
   summary: string;
   icon: string;
+  previewImage?: string;
   accent: {
     from: string;
     to: string;
@@ -251,7 +252,8 @@ export const productDetails: ProductDetail[] = [
     tagline: "An upcoming Expo app for turning the places you have been into a personal world archive.",
     summary:
       "Been-To-Box will collect the places a user has traveled, organize them into meaningful stats and highlights, and make personal travel history feel visual, memorable, and easy to revisit across mobile and web.",
-    icon: "/globe.svg",
+    icon: "/products/been-to-box-icon.png",
+    previewImage: "/been-to/been-to-box-banner.png",
     accent: {
       from: "from-emerald-400",
       to: "to-amber-400",

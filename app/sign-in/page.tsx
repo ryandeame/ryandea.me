@@ -1,11 +1,5 @@
-import { Suspense } from "react";
+import { notFound } from "next/navigation";
 
-import AuthPage from "@/components/auth/AuthPage";
-
-export default function SignInPage() {
-  return (
-    <Suspense>
-      <AuthPage mode="sign-in" />
-    </Suspense>
-  );
+export default function SignInRouteDisabledPage() {
+  notFound();
 }
