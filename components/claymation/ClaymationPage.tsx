@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import ClientContactForm from "@/components/ClientContactForm";
+import ClayNavbar from "@/components/claymation/ClayNavbar";
 import { productDetails } from "@/data/products";
 import { projects } from "@/data/projects";
 
@@ -34,59 +35,6 @@ export default function ClaymationPage() {
   );
 }
 
-function ClayNavbar() {
-  return (
-    <header className="border-b border-[#6fd37a]/40 bg-[#fff7d8]">
-      <div className="mx-auto flex min-h-[72px] w-full max-w-[1500px] items-center justify-between gap-4 px-4 sm:min-h-[94px] sm:px-11">
-        <Link href="/claymation" className="group inline-flex items-center gap-3">
-          <span className="relative h-14 w-14 overflow-hidden rounded-full border-2 border-[#161314] bg-[#ffcf4d] shadow-[0_8px_28px_rgba(92,153,88,0.24)] transition-transform group-hover:-rotate-3 group-hover:scale-105">
-            <Image
-              src="/claymation/ryan-silhouette-logo-transparent.webp"
-              alt=""
-              fill
-              sizes="56px"
-              className="absolute inset-0 scale-[1.16] object-cover object-center"
-            />
-          </span>
-          <span className="relative h-[72px] w-[250px] sm:h-[88px] sm:w-[340px]">
-            <Image
-              src="/claymation/ryandea-bird-wordmark.webp"
-              alt="ryandea.me"
-              fill
-              priority
-              sizes="(min-width: 640px) 340px, 250px"
-              className="object-contain object-left"
-            />
-          </span>
-        </Link>
-
-        <nav className="hidden flex-1 items-center justify-center gap-8 md:flex">
-          {navLinks.map((link) => (
-            <a
-              key={link}
-              href={`#${link.toLowerCase()}`}
-              className="py-3 text-[13px] font-black uppercase tracking-[0.16em] text-[#2b2218] transition-colors hover:text-[#3f7f4b]"
-            >
-              {link}
-            </a>
-          ))}
-        </nav>
-
-        <button className="ml-auto min-h-11 text-xs font-black uppercase tracking-[0.14em] text-[#2b2218] md:hidden">
-          Menu
-        </button>
-
-        <button className="inline-flex min-h-11 items-center gap-2 text-xs font-black uppercase tracking-[0.12em] text-[#2b2218]">
-          Cart
-          <span className="grid h-6 w-6 place-items-center rounded-full bg-[#5c9958] text-xs text-[#161314]">
-            0
-          </span>
-        </button>
-      </div>
-    </header>
-  );
-}
-
 function ClayHero() {
   return (
     <section className="relative min-h-[650px] overflow-hidden bg-[#bfe9ff]">
@@ -100,25 +48,45 @@ function ClayHero() {
       />
       <div className="absolute inset-0 bg-gradient-to-r from-[#fff3b8]/42 via-[#87e7ff]/10 to-transparent" />
 
-      <div className="relative mx-auto flex min-h-[650px] w-full max-w-[1500px] items-end px-6 py-9 md:items-center md:px-16 md:py-16">
-        <div className="max-w-3xl">
-          <h1 className="max-w-4xl font-serif text-[48px] font-black leading-[0.96] tracking-[-0.04em] text-[#fff7d8] drop-shadow-[0_5px_16px_rgba(14,45,66,0.72)] sm:text-[78px] sm:leading-[0.95]">
-            Join Ryan Deame in the Land of Software.
-          </h1>
+      <div className="relative mx-auto flex min-h-[650px] w-full max-w-[1500px] items-end justify-end px-6 py-9 md:items-center md:justify-start md:px-16 md:py-16">
+        <div className="w-full md:w-auto">
+          <div className="ml-auto max-w-[18rem] text-right md:ml-0 md:max-w-3xl md:text-left">
+            <h1 className="max-w-4xl font-serif text-[48px] font-black leading-[0.96] tracking-[-0.04em] text-[#fff7d8] drop-shadow-[0_5px_16px_rgba(14,45,66,0.72)] sm:text-[78px] sm:leading-[0.95]">
+              Join Ryan Deame in the Land of Software.
+            </h1>
 
-          <p className="mt-5 text-sm font-black uppercase leading-6 tracking-[0.08em] text-[#fff7d8] drop-shadow-[0_3px_8px_rgba(14,45,66,0.74)] sm:text-lg sm:leading-7">
-            Bold experiences. Tactile worlds.
-            <br />
-            Bright ideas built to shine.
-          </p>
+            <p className="mt-5 text-sm font-black uppercase leading-6 tracking-[0.08em] text-[#fff7d8] drop-shadow-[0_3px_8px_rgba(14,45,66,0.74)] sm:text-lg sm:leading-7">
+              <span>Bold experiences.</span>
+              <br className="md:hidden" />
+              <span className="hidden md:inline"> </span>
+              <span className="whitespace-nowrap">Tactile worlds.</span>
+              <br />
+              Bright ideas built to shine.
+            </p>
+          </div>
 
-          <a
-            href="#products"
-            className="mt-7 inline-flex min-h-[58px] min-w-[250px] items-center justify-between gap-6 rounded-full border border-[#fff7d8]/60 bg-[#ffcf4d] px-6 text-base font-black uppercase tracking-[0.13em] text-[#161314] shadow-[0_10px_28px_rgba(0,0,0,0.22)] transition-transform hover:-translate-y-1 hover:bg-[#70d779]"
-          >
-            Start exploring
-            <span className="text-3xl leading-none">›</span>
-          </a>
+          <div className="mt-7 flex justify-start">
+            <a
+              href="#products"
+              className="inline-flex min-h-[58px] min-w-[250px] items-center justify-between gap-6 rounded-full border border-[#fff7d8]/60 bg-[#ffcf4d] px-6 text-base font-black uppercase tracking-[0.13em] text-[#161314] shadow-[0_10px_28px_rgba(0,0,0,0.22)] transition-transform hover:-translate-y-1 hover:bg-[#70d779]"
+            >
+              <span>Start exploring</span>
+              <svg
+                aria-hidden="true"
+                className="h-6 w-6 shrink-0 self-center"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M9 5l7 7-7 7"
+                  stroke="currentColor"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="3"
+                />
+              </svg>
+            </a>
+          </div>
         </div>
       </div>
     </section>
@@ -369,52 +337,42 @@ function ClayFooter() {
         </section>
       </div>
 
-      <div className="relative mx-auto max-w-[1500px] px-6 pb-10 lg:px-12">
-        <div className="rounded-[2rem] border border-[#161314]/10 bg-[#f6eec9]/80 p-6 shadow-[0_18px_45px_rgba(43,34,24,0.1)]">
-          <p className="text-xs font-black uppercase tracking-[0.22em] text-[#3f7f4b]">
-            Regular index footer info
-          </p>
-          <div className="mt-5 grid gap-6 md:grid-cols-3">
-            <div>
-              <h3 className="font-serif text-2xl font-black">Social Links</h3>
-              <ul className="mt-3 space-y-2">
-                {socialLinks.map((link) => (
-                  <li key={link.name}>
-                    <a href={link.url} target="_blank" rel="noopener noreferrer" className="text-sm font-bold text-[#2b2218]/75 transition-colors hover:text-[#3f7f4b]">
-                      {link.name}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-serif text-2xl font-black">Contact Info</h3>
-              <div className="mt-3 space-y-2 text-sm font-bold text-[#2b2218]/75">
-                {email ? <a href={`mailto:${email}`} className="block transition-colors hover:text-[#3f7f4b]">{email}</a> : null}
-                {phone ? <a href={`tel:${phone.replace(/[^0-9+]/g, "")}`} className="block transition-colors hover:text-[#3f7f4b]">{phone}</a> : null}
-              </div>
-            </div>
-            <div>
-              <h3 className="font-serif text-2xl font-black">Copyright</h3>
-              <p className="mt-3 text-sm font-bold text-[#2b2218]/75">© Ryan Deame 2025</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <div className="relative border-t border-[#70d779]/45 bg-[#fff3b8]">
-        <div className="mx-auto flex min-h-[72px] max-w-[1500px] flex-col items-center justify-between gap-4 px-6 py-5 text-center sm:flex-row sm:px-12">
-          <p className="font-serif text-sm font-black tracking-[0.1em] text-[#2d6b3c]">
-            ★ RYANDEA.ME ★
-          </p>
-          <div className="flex flex-wrap justify-center gap-6 text-[11px] font-black uppercase tracking-[0.1em] text-[#2b2218]">
-            {navLinks.map((link) => (
-              <span key={link}>{link}</span>
-            ))}
+        <div className="mx-auto grid max-w-[1500px] gap-8 px-6 py-8 sm:px-12 lg:grid-cols-3">
+          <div>
+            <h3 className="font-serif text-2xl font-black tracking-tight">Navigation</h3>
+            <div className="mt-3 flex flex-col items-start gap-2 text-sm font-bold text-[#2b2218]/75">
+              {navLinks.map((link) => (
+                <a key={link} href={`#${link.toLowerCase()}`} className="transition-colors hover:text-[#3f7f4b]">
+                  {link}
+                </a>
+              ))}
+            </div>
           </div>
-          <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-[#3f7f4b]">
-            © 2026 Direction Study
-          </p>
+
+          <div>
+            <h3 className="font-serif text-2xl font-black tracking-tight">Social Links</h3>
+            <ul className="mt-3 space-y-2">
+              {socialLinks.map((link) => (
+                <li key={link.name}>
+                  <a href={link.url} target="_blank" rel="noopener noreferrer" className="text-sm font-bold text-[#2b2218]/75 transition-colors hover:text-[#3f7f4b]">
+                    {link.name}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <h3 className="font-serif text-2xl font-black tracking-tight">Contact Info</h3>
+            <div className="mt-3 space-y-2 text-sm font-bold text-[#2b2218]/75">
+              {email ? <a href={`mailto:${email}`} className="block transition-colors hover:text-[#3f7f4b]">{email}</a> : null}
+              {phone ? <a href={`tel:${phone.replace(/[^0-9+]/g, "")}`} className="block transition-colors hover:text-[#3f7f4b]">{phone}</a> : null}
+            </div>
+            <p className="mt-5 text-xs font-bold uppercase tracking-[0.08em] text-[#3f7f4b]">
+              © Ryan Deame 2026
+            </p>
+          </div>
         </div>
       </div>
     </footer>
