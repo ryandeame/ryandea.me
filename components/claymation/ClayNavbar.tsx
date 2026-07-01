@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-const navLinks = ["Products", "Projects", "FAQ", "Contact"];
+const navLinks = ["Products", "FAQ", "Contact"];
 
 export default function ClayNavbar() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);

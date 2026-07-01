@@ -1,12 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import ClientContactForm from "@/components/ClientContactForm";
+import ClayContactForm from "@/components/claymation/ClayContactForm";
+import ClayNewsletterForm from "@/components/claymation/ClayNewsletterForm";
 import ClayNavbar from "@/components/claymation/ClayNavbar";
 import { productDetails } from "@/data/products";
-import { projects } from "@/data/projects";
 
-const navLinks = ["Products", "Projects", "FAQ", "Contact"];
+const navLinks = ["Products", "FAQ", "Contact"];
 const faqItems = [
   "What size should I order?",
   "How long does shipping take?",
@@ -28,7 +28,6 @@ export default function ClaymationPage() {
       <ClayNavbar />
       <ClayHero />
       <ClayProducts />
-      <ClayProjects />
       <ClayContact />
       <ClayFooter />
     </main>
@@ -99,9 +98,7 @@ function ClayProducts() {
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_12%_18%,rgba(255,207,77,0.45),transparent_26%),radial-gradient(circle_at_88%_8%,rgba(135,231,255,0.45),transparent_28%),radial-gradient(circle_at_52%_100%,rgba(112,215,121,0.24),transparent_34%)]" />
       <div className="relative mx-auto max-w-[1500px]">
         <SectionHeading
-          eyebrow="Products"
-          title="Featured Products"
-          body="Apps and product concepts with a little more character: practical workflows, bright interfaces, and ideas that feel memorable before they feel corporate."
+          eyebrow="Software Offerings"
         />
 
         <div className="mt-14 grid gap-6 md:grid-cols-3">
@@ -166,108 +163,46 @@ function ClayProducts() {
   );
 }
 
-function ClayProjects() {
-  return (
-    <section id="projects" className="relative overflow-hidden bg-[#bfe9ff] px-6 py-24">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(255,247,216,0.7),transparent_30%),radial-gradient(circle_at_84%_72%,rgba(255,207,77,0.42),transparent_30%)]" />
-      <div className="relative mx-auto max-w-[1500px]">
-        <SectionHeading
-          eyebrow="Work"
-          title="Featured Projects"
-          body="A few practical builds from the archive, reframed inside the brighter claymation direction so the work feels less sterile and more alive."
-        />
-
-        <div className="mt-14 grid gap-7 md:grid-cols-2">
-          {projects.map((project, index) => (
-            <article
-              key={project.title}
-              className="group overflow-hidden rounded-[2rem] border-2 border-[#161314]/15 bg-[#fff7d8] shadow-[0_18px_45px_rgba(43,34,24,0.14)] transition-transform hover:-translate-y-2"
-            >
-              <div className="relative aspect-video overflow-hidden bg-[#161314]">
-                <Image
-                  src={project.image}
-                  alt={`${project.title} thumbnail`}
-                  fill
-                  sizes="(min-width: 768px) 45vw, 90vw"
-                  className="object-cover transition-transform duration-700 group-hover:scale-105"
-                />
-                <div className="absolute left-4 top-4 rounded-full bg-[#ffcf4d] px-4 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-[#161314]">
-                  {project.date}
-                </div>
-              </div>
-              <div className="p-6">
-                <div className="mb-4 flex items-center gap-3">
-                  <span className="grid h-10 w-10 place-items-center rounded-full bg-[#70d779] font-serif text-lg font-black text-[#161314]">
-                    {index + 1}
-                  </span>
-                  <h3 className="font-serif text-2xl font-black tracking-tight text-[#161314]">
-                    {project.title}
-                  </h3>
-                </div>
-                <p className="text-sm font-semibold leading-6 text-[#2b2218]/80">
-                  {project.description}
-                </p>
-                {project.tags.length > 0 ? (
-                  <div className="mt-5 flex flex-wrap gap-2">
-                    {project.tags.map((tag) => (
-                      <span key={tag} className="rounded-full border border-[#161314]/10 bg-[#f6eec9] px-3 py-1 text-xs font-black uppercase tracking-[0.08em] text-[#3f7f4b]">
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                ) : null}
-                <div className="mt-6 flex flex-wrap gap-4 border-t border-[#161314]/10 pt-5 text-sm font-black text-[#2b2218]">
-                  {project.github ? (
-                    <a href={project.github} target="_blank" rel="noopener noreferrer" className="hover:text-[#3f7f4b]">
-                      View code
-                    </a>
-                  ) : null}
-                  {project.videoId ? (
-                    <a href={`https://www.youtube.com/watch?v=${project.videoId}`} target="_blank" rel="noopener noreferrer" className="hover:text-[#3f7f4b]">
-                      Watch demo
-                    </a>
-                  ) : null}
-                  {project.datasource ? (
-                    <a href={project.datasource} target="_blank" rel="noopener noreferrer" className="hover:text-[#3f7f4b]">
-                      Data source
-                    </a>
-                  ) : null}
-                </div>
-              </div>
-            </article>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
 function ClayContact() {
   return (
-    <section className="relative overflow-hidden bg-[#f6eec9]">
-      <div className="px-6 pt-20">
-        <SectionHeading
-          eyebrow="Contact"
-          title="Start The Conversation"
-          body="Keeping the working contact form here for now, with the claymation direction framing it above the current production form."
-        />
-      </div>
-      <ClientContactForm />
+    <section id="contact" className="relative overflow-hidden bg-[#f6eec9]">
+      <Image
+        src="/claymation/contact-tropical-birds-bg.webp"
+        alt=""
+        fill
+        sizes="100vw"
+        className="object-cover object-center"
+      />
+      <div className="absolute inset-0 bg-gradient-to-r from-[#f6eec9]/20 via-[#fff7d8]/34 to-[#fff7d8]/60" />
+      <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[#fff7d8] to-transparent" />
+      <ClayContactForm />
     </section>
   );
 }
 
-function SectionHeading({ eyebrow, title, body }: { eyebrow: string; title: string; body: string }) {
+function SectionHeading({ eyebrow }: { eyebrow: string }) {
   return (
     <div className="mx-auto max-w-4xl text-center">
-      <p className="mb-4 text-xs font-black uppercase tracking-[0.22em] text-[#3f7f4b]">
+      <p className="mb-4 text-2xl font-black uppercase tracking-[0.16em] text-[#3f7f4b] sm:text-3xl">
         {eyebrow}
       </p>
-      <h2 className="font-serif text-5xl font-black tracking-[-0.04em] text-[#161314] md:text-7xl">
-        {title}
-      </h2>
+      <div className="relative mx-auto mt-2 h-44 w-full max-w-sm sm:h-56">
+        <Image
+          src="/claymation/coati-floppy-downward-v2.webp"
+          alt="Claymation coati pinning the corner of a floppy disk"
+          fill
+          sizes="(min-width: 640px) 384px, 90vw"
+          className="object-contain"
+        />
+      </div>
       <p className="mx-auto mt-6 max-w-3xl text-lg font-semibold leading-8 text-[#2b2218]/78">
-        {body}
+        These are my personal software offerings: practical products, playful
+        interfaces, and focused tools shaped by the way I like to build. If you
+        want to create something of your own,{" "}
+        <a href="#contact" className="font-black text-[#3f7f4b] underline decoration-[#ffcf4d] decoration-4 underline-offset-4 transition-colors hover:text-[#161314]">
+          contact me
+        </a>
+        .
       </p>
     </div>
   );
@@ -286,25 +221,17 @@ function ClayFooter() {
   return (
     <footer className="relative overflow-hidden border-t border-[#70d779]/45 bg-[#fff7d8] text-[#201c1c]">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_10%_0%,rgba(112,215,121,0.34),transparent_28%),radial-gradient(circle_at_86%_22%,rgba(255,207,77,0.5),transparent_28%),radial-gradient(circle_at_50%_100%,rgba(96,165,250,0.25),transparent_36%)]" />
-      <div className="relative mx-auto grid max-w-[1500px] gap-8 px-6 py-9 lg:grid-cols-[1.35fr_1fr_270px] lg:px-12 lg:py-12">
-        <section className="flex flex-col gap-6 border-[#3e312a]/35 lg:flex-row lg:items-center lg:border-r lg:pr-9">
-          <div className="grid h-32 w-44 shrink-0 place-items-center rounded-[2rem] border border-[#5c9958]/35 bg-[#87e7ff]/45 shadow-[inset_0_0_0_8px_rgba(255,247,216,0.6),0_18px_42px_rgba(96,165,250,0.2)]">
-            <div className="h-20 w-20 rounded-full bg-[#ffcf4d] shadow-[inset_-14px_-12px_0_rgba(92,153,88,0.28),0_12px_28px_rgba(92,153,88,0.22)]" />
-          </div>
-          <div>
-            <h2 className="font-serif text-3xl font-black tracking-tight">The Direction</h2>
-            <p className="mt-3 max-w-xl text-sm font-semibold leading-6 text-[#2b2218]">
-              We are not here to blend in. We are here to build a page with texture,
-              character, and a little weirdness. This route is the sunny trailhead for a
-              more personal software world.
-            </p>
-            <p className="mt-3 font-serif text-base font-black tracking-wide text-[#3f7f4b]">
-              Color over chrome.
-            </p>
-          </div>
+      <div className="relative mx-auto grid max-w-[1500px] gap-8 px-6 py-9 lg:grid-cols-[minmax(280px,420px)_1fr] lg:items-start lg:px-12 lg:py-12">
+        <section className="rounded-[1.75rem] border border-[#5c9958]/35 bg-[#87e7ff]/40 p-6 text-[#201c1c] shadow-[0_18px_50px_rgba(96,165,250,0.18)]">
+          <h2 className="font-serif text-2xl font-black leading-tight text-[#2d6b3c]">
+            Join the adventure.
+            <br />
+            Sign up for my newsletter.
+          </h2>
+          <ClayNewsletterForm />
         </section>
 
-        <section id="faq">
+        <section id="faq" className="rounded-[1.75rem] border border-[#5c9958]/25 bg-[#fff7d8]/70 p-6 shadow-[0_18px_50px_rgba(43,34,24,0.1)]">
           <h2 className="font-serif text-3xl font-black tracking-tight">FAQ</h2>
           <div className="mt-3 border-t border-[#3e312a]/50">
             {faqItems.map((item) => (
@@ -318,22 +245,6 @@ function ClayFooter() {
               </button>
             ))}
           </div>
-        </section>
-
-        <section className="rounded-[1.75rem] border border-[#5c9958]/35 bg-[#87e7ff]/40 p-6 text-[#201c1c] shadow-[0_18px_50px_rgba(96,165,250,0.18)]">
-          <h2 className="font-serif text-2xl font-black leading-tight text-[#2d6b3c]">
-            Join the adventure
-          </h2>
-          <p className="mt-3 text-sm leading-5">Get updates when this visual direction starts blooming.</p>
-          <input
-            aria-label="Email address"
-            className="mt-4 h-11 w-full rounded-full border border-[#5c9958]/35 bg-[#fff7d8] px-4 text-sm text-[#161314] outline-none placeholder:text-[#6e765e]"
-            placeholder="Email address"
-            type="email"
-          />
-          <button className="mt-3 h-11 w-full rounded-full bg-[#ffcf4d] text-sm font-black uppercase tracking-[0.1em] text-[#161314] transition-colors hover:bg-[#70d779]" type="button">
-            Sign up
-          </button>
         </section>
       </div>
 

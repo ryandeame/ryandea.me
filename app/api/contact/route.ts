@@ -8,6 +8,25 @@ const contactSchema = z.object({
   message: z.string().min(1).max(2000),
 });
 
+function getDevelopmentErrorDetails(error: unknown) {
+  if (process.env.NODE_ENV === "production" || !(error instanceof Error)) {
+    return undefined;
+  }
+
+  const smtpError = error as Error & {
+    code?: string;
+    command?: string;
+    responseCode?: number;
+  };
+
+  return {
+    message: smtpError.message,
+    code: smtpError.code,
+    command: smtpError.command,
+    responseCode: smtpError.responseCode,
+  };
+}
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -60,6 +79,13 @@ export async function POST(req: Request) {
         ? "Please check your inputs"
         : "Unable to send message";
 
-    return NextResponse.json({ ok: false, error: message }, { status });
+    return NextResponse.json(
+      {
+        ok: false,
+        error: message,
+        details: getDevelopmentErrorDetails(error),
+      },
+      { status },
+    );
   }
 }
