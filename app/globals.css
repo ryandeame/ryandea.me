@@ -35,6 +35,19 @@ body {
   }
 }
 
+@keyframes newsletterShimmer {
+  0%,
+  100% {
+    background-position: 0% 50%;
+    opacity: 0.62;
+  }
+
+  50% {
+    background-position: 100% 50%;
+    opacity: 0.92;
+  }
+}
+
 @keyframes pulse-glow {
 
   0%,

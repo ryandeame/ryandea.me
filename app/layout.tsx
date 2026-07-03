@@ -16,6 +16,7 @@ const geistMono = Geist_Mono({
 const siteUrl = "https://ryandea.me";
 const siteName = "Ryan Deame | Full-Stack Developer";
 const siteDescription = "Full-stack developer transforming ideas into powerful, production-ready solutions. Specializing in web apps, automation, and data dashboards. Clean code. Fast delivery. Real business results.";
+const siteIcon = "/claymation/new-face-icon.png";
 
 export const metadata: Metadata = {
   // Basic metadata
@@ -24,9 +25,9 @@ export const metadata: Metadata = {
 
   // Favicon
   icons: {
-    icon: "/icon.png",
-    apple: "/icon.png",
-    shortcut: "/icon.png",
+    icon: siteIcon,
+    apple: siteIcon,
+    shortcut: siteIcon,
   },
 
   // Open Graph - Facebook, WhatsApp, LinkedIn, Messenger, Discord, etc.

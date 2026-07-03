@@ -46,6 +46,7 @@ next-env.d.ts
 
 # local admin utilities and credentials
 /scripts/
+/stripe/
 
 # local imported assets
 /new_3D/

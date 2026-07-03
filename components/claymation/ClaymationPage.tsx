@@ -4,29 +4,29 @@ import Link from "next/link";
 import ClayContactForm from "@/components/claymation/ClayContactForm";
 import ClayNewsletterForm from "@/components/claymation/ClayNewsletterForm";
 import ClayNavbar from "@/components/claymation/ClayNavbar";
+import ClayShopCatalog from "@/components/claymation/ClayShopCatalog";
 import { productDetails } from "@/data/products";
 
-const navLinks = ["Products", "FAQ", "Contact"];
-const faqItems = [
-  "What size should I order?",
-  "How long does shipping take?",
-  "What is your return policy?",
-];
+const navLinks = ["Shop", "Products", "Contact"];
 const featuredProductSlug = "been-to-box";
+const hiddenProductSlugs = new Set(["ontrack", "reach"]);
 const externalProductUrls: Partial<Record<(typeof productDetails)[number]["slug"], string>> = {
   [featuredProductSlug]: "https://ryandeame--been-to-box.us-central1.hosted.app",
 };
-const orderedProductDetails = [...productDetails].sort((a, b) => {
-  if (a.slug === featuredProductSlug) return -1;
-  if (b.slug === featuredProductSlug) return 1;
-  return 0;
-});
+const orderedProductDetails = [...productDetails]
+  .filter((product) => !hiddenProductSlugs.has(product.slug))
+  .sort((a, b) => {
+    if (a.slug === featuredProductSlug) return -1;
+    if (b.slug === featuredProductSlug) return 1;
+    return 0;
+  });
 
 export default function ClaymationPage() {
   return (
     <main className="min-h-screen bg-[#f6eec9] text-[#161314]">
       <ClayNavbar />
       <ClayHero />
+      <ClayShop />
       <ClayProducts />
       <ClayContact />
       <ClayFooter />
@@ -38,7 +38,7 @@ function ClayHero() {
   return (
     <section className="relative min-h-[650px] overflow-hidden bg-[#bfe9ff]">
       <Image
-        src="/claymation/hero-banner-waterfall-clay.png"
+        src="/claymation/hero-banner-waterfall-clay.webp"
         alt="Whimsical claymation waterfall hero with a traveler in a green hat"
         fill
         priority
@@ -66,7 +66,7 @@ function ClayHero() {
 
           <div className="mt-7 flex justify-start">
             <a
-              href="#products"
+              href="#shop"
               className="inline-flex min-h-[58px] min-w-[250px] items-center justify-between gap-6 rounded-full border border-[#fff7d8]/60 bg-[#ffcf4d] px-6 text-base font-black uppercase tracking-[0.13em] text-[#161314] shadow-[0_10px_28px_rgba(0,0,0,0.22)] transition-transform hover:-translate-y-1 hover:bg-[#70d779]"
             >
               <span>Start exploring</span>
@@ -92,6 +92,41 @@ function ClayHero() {
   );
 }
 
+function ClayShop() {
+  return (
+    <section id="shop" className="relative overflow-hidden bg-[#f6eec9] px-6 py-24">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_15%,rgba(135,231,255,0.52),transparent_28%),radial-gradient(circle_at_80%_20%,rgba(255,207,77,0.46),transparent_24%),radial-gradient(circle_at_52%_92%,rgba(112,215,121,0.28),transparent_36%)]" />
+      <div className="relative mx-auto grid max-w-[1500px] items-center gap-10 lg:grid-cols-[0.95fr_1.05fr]">
+        <div className="relative mx-auto h-[420px] w-full max-w-xl sm:h-[540px] lg:order-2">
+          <Image
+            src="/claymation/shop-bird-bag-clean-v2-chroma-better.webp"
+            alt="Claymation bird carrying a designer shopping bag with the Ryan Deame face logo"
+            fill
+            priority
+            sizes="(min-width: 1024px) 46vw, 92vw"
+            className="object-contain drop-shadow-[0_24px_42px_rgba(43,34,24,0.18)]"
+          />
+        </div>
+
+        <div className="mx-auto max-w-2xl text-center lg:text-left">
+          <p className="text-2xl font-black uppercase tracking-[0.16em] text-[#3f7f4b] sm:text-3xl">
+            Shop
+          </p>
+          <h2 className="mt-5 font-serif text-5xl font-black leading-[0.95] tracking-[-0.04em] text-[#161314] sm:text-7xl">
+            Software you can put to work.
+          </h2>
+          <p className="mt-6 text-lg font-semibold leading-8 text-[#2b2218]/78">
+            Purchase software, tools, and digital experiences to solve real
+            world problems with a little more color and personality than the
+            usual dashboard.
+          </p>
+          <ClayShopCatalog />
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function ClayProducts() {
   return (
     <section id="products" className="relative overflow-hidden bg-[#fff7d8] px-6 py-24">
@@ -101,7 +136,7 @@ function ClayProducts() {
           eyebrow="Software Offerings"
         />
 
-        <div className="mt-14 grid gap-6 md:grid-cols-3">
+        <div className="mx-auto mt-14 grid max-w-xl gap-6">
           {orderedProductDetails.map((product) => {
             const externalUrl = externalProductUrls[product.slug];
             const href = externalUrl ?? `/products/${product.slug}`;
@@ -171,7 +206,7 @@ function ClayContact() {
         alt=""
         fill
         sizes="100vw"
-        className="object-cover object-center"
+        className="object-cover object-[25%_50%] md:object-center"
       />
       <div className="absolute inset-0 bg-gradient-to-r from-[#f6eec9]/20 via-[#fff7d8]/34 to-[#fff7d8]/60" />
       <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[#fff7d8] to-transparent" />
@@ -221,32 +256,28 @@ function ClayFooter() {
   return (
     <footer className="relative overflow-hidden border-t border-[#70d779]/45 bg-[#fff7d8] text-[#201c1c]">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_10%_0%,rgba(112,215,121,0.34),transparent_28%),radial-gradient(circle_at_86%_22%,rgba(255,207,77,0.5),transparent_28%),radial-gradient(circle_at_50%_100%,rgba(96,165,250,0.25),transparent_36%)]" />
-      <div className="relative mx-auto grid max-w-[1500px] gap-8 px-6 py-9 lg:grid-cols-[minmax(280px,420px)_1fr] lg:items-start lg:px-12 lg:py-12">
-        <section className="rounded-[1.75rem] border border-[#5c9958]/35 bg-[#87e7ff]/40 p-6 text-[#201c1c] shadow-[0_18px_50px_rgba(96,165,250,0.18)]">
-          <h2 className="font-serif text-2xl font-black leading-tight text-[#2d6b3c]">
-            Join the adventure.
-            <br />
-            Sign up for my newsletter.
-          </h2>
-          <ClayNewsletterForm />
-        </section>
-
-        <section id="faq" className="rounded-[1.75rem] border border-[#5c9958]/25 bg-[#fff7d8]/70 p-6 shadow-[0_18px_50px_rgba(43,34,24,0.1)]">
-          <h2 className="font-serif text-3xl font-black tracking-tight">FAQ</h2>
-          <div className="mt-3 border-t border-[#3e312a]/50">
-            {faqItems.map((item) => (
-              <button
-                key={item}
-                className="flex min-h-11 w-full items-center justify-between gap-3 border-b border-[#3e312a]/35 text-left text-xs font-black uppercase tracking-[0.04em] transition-colors hover:text-[#3f7f4b]"
-                type="button"
-              >
-                {item}
-                <span className="text-2xl font-medium">+</span>
-              </button>
-            ))}
-          </div>
-        </section>
-      </div>
+        <div className="relative mx-auto max-w-[1500px] px-6 py-9 lg:px-12 lg:py-12">
+          <section className="mx-auto flex justify-center text-center text-[#201c1c]">
+            <div
+              className="relative flex min-h-[618px] w-full max-w-xs flex-col items-center justify-end gap-4 overflow-hidden rounded-[1.75rem] border border-[#5c9958]/35 bg-cover bg-top px-5 py-7 shadow-[0_18px_50px_rgba(96,165,250,0.18)] sm:max-w-sm sm:px-8 lg:py-9"
+              style={{
+                backgroundImage: "url('/claymation/newsletter-ibis-scroll-bg.webp')",
+                backgroundPosition: "top center",
+              }}
+            >
+              <div className="absolute inset-0 animate-[newsletterShimmer_9s_ease-in-out_infinite] bg-[linear-gradient(115deg,rgba(135,231,255,0.42),rgba(255,207,77,0.24),rgba(255,132,189,0.34),rgba(112,215,121,0.32),rgba(135,231,255,0.42))] bg-[length:240%_240%] mix-blend-screen" />
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_28%_20%,rgba(255,255,255,0.48),transparent_30%),radial-gradient(circle_at_78%_14%,rgba(255,244,173,0.34),transparent_28%),linear-gradient(180deg,transparent_45%,rgba(255,247,216,0.58))]" />
+              <h2 className="relative z-10 font-serif text-4xl font-black leading-[1.04] tracking-[0.02em] text-white drop-shadow-[0_5px_14px_rgba(22,19,20,0.82)] sm:text-5xl">
+                <span className="block">Sign up</span>
+                <span className="block">for my</span>
+                <span className="block">newsletter.</span>
+              </h2>
+              <div className="relative z-10 w-full max-w-sm">
+                <ClayNewsletterForm />
+              </div>
+            </div>
+          </section>
+        </div>
 
       <div className="relative border-t border-[#70d779]/45 bg-[#fff3b8]">
         <div className="mx-auto grid max-w-[1500px] gap-8 px-6 py-8 sm:px-12 lg:grid-cols-3">

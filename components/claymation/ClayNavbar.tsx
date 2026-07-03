@@ -4,10 +4,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-const navLinks = ["Products", "FAQ", "Contact"];
+import ClayCurrencySelect from "@/components/claymation/ClayCurrencySelect";
+import { useShopCart } from "@/components/claymation/useShopCart";
+
+const navLinks = ["Shop", "Products", "Contact"];
 
 export default function ClayNavbar() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const { itemCount } = useShopCart();
 
   useEffect(() => {
     if (!isDrawerOpen) return;
@@ -44,19 +48,20 @@ export default function ClayNavbar() {
               sizes="48px"
               className="scale-125 object-contain"
             />
+            <span
+              aria-hidden="true"
+              className="absolute left-1/2 top-[65%] z-10 grid h-8 w-8 -translate-x-1/2 -translate-y-1/2 place-items-center drop-shadow-[0_2px_4px_rgba(255,247,216,0.9)]"
+            >
+              <span className="flex w-6 flex-col gap-1.5">
+                <span className="h-1 rounded-full bg-[#161314]" />
+                <span className="h-1 rounded-full bg-[#161314]" />
+                <span className="h-1 rounded-full bg-[#161314]" />
+              </span>
+            </span>
           </span>
         </button>
 
-        <Link href="/claymation" className="group order-2 flex min-w-0 flex-1 items-center justify-center gap-2 md:order-1 md:inline-flex md:flex-none md:justify-start md:gap-3">
-          <span className="relative hidden h-14 w-14 overflow-hidden rounded-full border-2 border-[#161314] bg-[#ffcf4d] shadow-[0_8px_28px_rgba(92,153,88,0.24)] transition-transform group-hover:-rotate-3 group-hover:scale-105 md:block">
-            <Image
-              src="/claymation/ryan-silhouette-logo-transparent.webp"
-              alt=""
-              fill
-              sizes="56px"
-              className="absolute inset-0 scale-[1.16] object-cover object-center"
-            />
-          </span>
+        <Link href="/" className="group order-2 flex min-w-0 flex-1 items-center justify-center gap-2 md:order-1 md:inline-flex md:flex-none md:justify-start">
           <span className="relative h-[64px] w-full min-w-0 sm:h-[88px] md:w-[340px] md:flex-none">
             <Image
               src="/claymation/ryandea-bird-wordmark.webp"
@@ -73,7 +78,7 @@ export default function ClayNavbar() {
           {navLinks.map((link) => (
             <a
               key={link}
-              href={`#${link.toLowerCase()}`}
+              href={`/#${link.toLowerCase()}`}
               className="py-3 text-[13px] font-black uppercase tracking-[0.16em] text-[#2b2218] transition-colors hover:text-[#3f7f4b]"
             >
               {link}
@@ -81,24 +86,30 @@ export default function ClayNavbar() {
           ))}
         </nav>
 
-        <button
-          className="order-3 grid min-h-11 min-w-11 shrink-0 place-items-center transition-transform hover:-rotate-3 hover:scale-105"
-          type="button"
-          aria-label="Cart with 0 items"
-        >
-          <span className="relative grid h-12 w-12 place-items-center">
-            <Image
-              src="/claymation/toucan-cart-icon.webp"
-              alt=""
-              fill
-              sizes="48px"
-              className="scale-125 object-contain"
-            />
-            <span className="absolute left-1/2 top-1/2 grid h-5 w-5 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-[#161314] bg-[#ffcf4d] text-[10px] font-black leading-none text-[#161314] shadow-[0_2px_6px_rgba(22,19,20,0.22)]">
-              0
+        <div className="order-3 flex shrink-0 items-center gap-2">
+          <ClayCurrencySelect />
+          <Link
+            href="/cart"
+            className="grid min-h-11 min-w-11 place-items-center transition-transform hover:-rotate-3 hover:scale-105"
+            aria-label="Cart"
+          >
+            <span className="relative grid h-12 w-12 place-items-center">
+              <Image
+                src="/claymation/toucan-cart-icon.webp"
+                alt=""
+                fill
+                sizes="48px"
+                className="scale-125 object-contain"
+              />
+              <span
+                className="absolute left-1/2 top-1/2 grid h-5 w-5 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-[#161314] bg-[#ffcf4d] text-[10px] font-black leading-none text-[#161314] shadow-[0_2px_6px_rgba(22,19,20,0.22)]"
+                suppressHydrationWarning
+              >
+                {itemCount}
+              </span>
             </span>
-          </span>
-        </button>
+          </Link>
+        </div>
       </div>
 
       <div
@@ -144,7 +155,7 @@ export default function ClayNavbar() {
             {navLinks.map((link) => (
               <a
                 key={link}
-                href={`#${link.toLowerCase()}`}
+                href={`/#${link.toLowerCase()}`}
                 className="rounded-2xl border border-[#161314]/10 bg-[#f6eec9] px-5 py-4 font-serif text-2xl font-black tracking-tight text-[#161314] shadow-[0_10px_24px_rgba(43,34,24,0.08)] transition-colors hover:bg-[#ffcf4d]"
                 onClick={closeDrawer}
               >
@@ -153,12 +164,16 @@ export default function ClayNavbar() {
             ))}
           </nav>
 
+          <div className="mt-5">
+            <ClayCurrencySelect variant="drawer" />
+          </div>
+
           <div className="mt-auto rounded-[1.5rem] border border-[#5c9958]/35 bg-[#87e7ff]/35 p-4">
             <p className="text-xs font-black uppercase tracking-[0.18em] text-[#3f7f4b]">
               ryandea.me
             </p>
             <p className="mt-2 text-sm font-bold leading-5 text-[#2b2218]">
-              Bright software experiments, product work, and claymation energy.
+              Thanks for visiting my site! Let&apos;s do good work together!
             </p>
           </div>
         </aside>

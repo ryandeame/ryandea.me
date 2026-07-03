@@ -63,6 +63,11 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    match /shopCatalog/{docId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
     match /locations/{document=**} {
       allow read: if true;
       allow write: if false;

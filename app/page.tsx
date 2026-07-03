@@ -1,21 +1,13 @@
-import Hero from "@/components/Hero";
-import Products from "@/components/Products";
-import ServiceOfferings from "@/components/ServiceOfferings";
-import Projects from "@/components/Projects";
-import ClientContactForm from "@/components/ClientContactForm";
-import Footer from "@/components/Footer";
+import type { Metadata } from "next";
+
+import { ClaymationPage } from "@/components/claymation";
+
+export const metadata: Metadata = {
+  title: "Ryan Deame | Software Land",
+  description:
+    "A claymation-inspired software shop and product world by Ryan Deame.",
+};
 
 export default function Home() {
-  return (
-    <div className="min-h-screen flex flex-col font-[family-name:var(--font-geist-sans)] bg-[#0a0a0a] relative">
-      <main className="flex-grow relative">
-        <Hero />
-        <Products />
-        <ServiceOfferings />
-        <Projects />
-        <ClientContactForm />
-      </main>
-      <Footer />
-    </div>
-  );
+  return <ClaymationPage />;
 }
