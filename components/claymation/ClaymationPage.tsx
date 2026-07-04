@@ -42,6 +42,7 @@ function ClayHero() {
         alt="Whimsical claymation waterfall hero with a traveler in a green hat"
         fill
         priority
+        quality={100}
         sizes="100vw"
         className="object-cover object-[62%_50%] md:object-center"
       />
@@ -99,7 +100,7 @@ function ClayShop() {
       <div className="relative mx-auto grid max-w-[1500px] items-center gap-10 lg:grid-cols-[0.95fr_1.05fr]">
         <div className="relative mx-auto h-[420px] w-full max-w-xl sm:h-[540px] lg:order-2">
           <Image
-            src="/claymation/shop-bird-bag-clean-v2-chroma-better.webp"
+            src="/claymation/shop-bird-bag-v3.webp"
             alt="Claymation bird carrying a designer shopping bag with the Ryan Deame face logo"
             fill
             priority
@@ -205,6 +206,7 @@ function ClayContact() {
         src="/claymation/contact-tropical-birds-bg.webp"
         alt=""
         fill
+        quality={100}
         sizes="100vw"
         className="object-cover object-[25%_50%] md:object-center"
       />
