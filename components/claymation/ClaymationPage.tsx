@@ -46,8 +46,6 @@ function ClayHero() {
         sizes="100vw"
         className="object-cover object-[62%_50%] md:object-center"
       />
-      <div className="absolute inset-0 bg-gradient-to-r from-[#fff3b8]/42 via-[#87e7ff]/10 to-transparent" />
-
       <div className="relative mx-auto flex min-h-[650px] w-full max-w-[1500px] items-end justify-end px-6 py-9 md:items-center md:justify-start md:px-16 md:py-16">
         <div className="w-full md:w-auto">
           <div className="ml-auto max-w-[18rem] text-right md:ml-0 md:max-w-3xl md:text-left">
