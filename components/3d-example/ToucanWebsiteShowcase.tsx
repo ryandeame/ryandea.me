@@ -80,7 +80,6 @@ function useScrollProgress() {
 }
 
 function ToucanModel({ progress }: { progress: number }) {
-  const actionRef = useRef<THREE.AnimationAction | null>(null);
   const { scene, animations } = useGLTF(TOUCAN_MODEL_PATH) as {
     scene: THREE.Group;
     animations: THREE.AnimationClip[];
@@ -103,7 +102,7 @@ function ToucanModel({ progress }: { progress: number }) {
     model.position.sub(center);
   }, [model]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!primaryClip) {
       return;
     }
@@ -111,33 +110,27 @@ function ToucanModel({ progress }: { progress: number }) {
     const action = mixer.clipAction(primaryClip);
     action.reset();
     action.enabled = true;
-    action.paused = true;
     action.play();
-    action.time = 0;
-    actionRef.current = action;
-    mixer.update(0);
+    mixer.setTime(0);
 
     return () => {
-      actionRef.current = null;
       action.stop();
       mixer.uncacheAction(primaryClip, model);
     };
   }, [mixer, model, primaryClip]);
 
   useFrame(() => {
-    const action = actionRef.current;
     const scrollFrame =
       THREE.MathUtils.clamp(progress, 0, 1) * TOUCAN_ANIMATION_FRAMES;
     const clipProgress = scrollFrame / TOUCAN_ANIMATION_FRAMES;
 
-    if (action && primaryClip && primaryClip.duration > 0) {
-      action.time = clipProgress * primaryClip.duration;
-      mixer.update(0);
+    if (primaryClip && primaryClip.duration > 0) {
+      mixer.setTime(clipProgress * primaryClip.duration);
     }
   });
 
   return (
-    <group position={[0, 1.55, -3.2]}>
+    <group position={[0, 1.7, -0.12]}>
       <primitive object={model} />
     </group>
   );

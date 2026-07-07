@@ -9,7 +9,7 @@ import {
   CATALOG_CACHE_KEY,
   getCachedCatalog,
   getDefaultPrice,
-  getDisplayableProduct,
+  getDisplayableProducts,
   formatPrice,
   normalizeCatalog,
   saveCachedCatalog,
@@ -20,7 +20,7 @@ import { useShopCurrency } from "@/components/claymation/useShopCurrency";
 
 type CatalogState =
   | { status: "loading" }
-  | { status: "available"; product: ShopProduct }
+  | { status: "available"; products: ShopProduct[] }
   | { status: "unavailable" };
 
 export default function ClayShopCatalog() {
@@ -56,9 +56,9 @@ export default function ClayShopCatalog() {
 
         saveCachedCatalog(catalog, cachedCatalog);
 
-        const product = getDisplayableProduct(catalog);
+        const products = getDisplayableProducts(catalog);
 
-        if (!product || !getDefaultPrice(product)) {
+        if (products.length === 0) {
           if (!isCancelled) {
             setState({ status: "unavailable" });
           }
@@ -66,7 +66,7 @@ export default function ClayShopCatalog() {
         }
 
         if (!isCancelled) {
-          setState({ status: "available", product });
+          setState({ status: "available", products });
         }
       } catch (error) {
         console.error("[shop] failed to load catalog", error);
@@ -109,50 +109,52 @@ export default function ClayShopCatalog() {
     );
   }
 
-  const selectedPriceLabel = formatPrice(getDefaultPrice(state.product), currency);
-  const selectedPrice = getDefaultPrice(state.product);
-
-  if (!selectedPriceLabel) {
-    return (
-      <div className="mt-8 max-w-xl rounded-[2rem] border-2 border-[#c2410c]/25 bg-[#fff7d8]/86 p-6 text-left shadow-[0_20px_46px_rgba(43,34,24,0.14)]">
-        <p className="text-xs font-black uppercase tracking-[0.18em] text-[#c2410c]">
-          Currency Unavailable
-        </p>
-        <p className="mt-4 text-sm font-semibold leading-6 text-[#2b2218]/78">
-          This product is not priced in {currency}. Choose another available currency.
-        </p>
-      </div>
-    );
-  }
-
   return (
-    <div className="mt-8 max-w-xl rounded-[2rem] border-2 border-[#5c9958]/30 bg-[#fff7d8]/86 p-6 text-left shadow-[0_20px_46px_rgba(43,34,24,0.14)]">
-      <p className="text-xs font-black uppercase tracking-[0.18em] text-[#3f7f4b]">
-        Starter Offer
-      </p>
-      <div className="mt-3 flex flex-col gap-4">
-        <h3 className="max-w-full font-serif text-3xl font-black leading-tight tracking-[-0.03em] text-[#161314] sm:text-4xl">
-          {state.product.name}
-        </h3>
-        <p className="max-w-full text-2xl font-black leading-none text-[#2d6b3c] sm:text-3xl">
-          {selectedPriceLabel}
-        </p>
-      </div>
-      {state.product.description ? (
-        <p className="mt-4 text-sm font-semibold leading-6 text-[#2b2218]/78">
-          {state.product.description}
-        </p>
-      ) : null}
-      <button
-        type="button"
-        onClick={() => {
-          addProductToCart(state.product.id, selectedPrice?.id);
-          router.push("/cart");
-        }}
-        className="mt-6 inline-flex min-h-12 items-center justify-center rounded-full border-2 border-[#161314] bg-[#ffcf4d] px-6 text-xs font-black uppercase tracking-[0.14em] text-[#161314] transition-transform hover:-translate-y-1 hover:bg-[#70d779]"
-      >
-        Add to cart
-      </button>
+    <div className="mt-8 flex flex-col gap-6">
+      {state.products.map((product) => {
+        const selectedPrice = getDefaultPrice(product);
+        const selectedPriceLabel = formatPrice(selectedPrice, currency);
+
+        return (
+          <div
+            key={product.id}
+            className="w-full max-w-xl rounded-[2rem] border-2 border-[#5c9958]/30 bg-[#fff7d8]/86 p-6 text-left shadow-[0_20px_46px_rgba(43,34,24,0.14)]"
+          >
+            <p className="text-xs font-black uppercase tracking-[0.18em] text-[#3f7f4b]">
+              Offer
+            </p>
+            <div className="mt-3 flex flex-col gap-4">
+              <h3 className="max-w-full font-serif text-3xl font-black leading-tight tracking-[-0.03em] text-[#161314] sm:text-4xl">
+                {product.name}
+              </h3>
+              <p className="max-w-full text-2xl font-black leading-none text-[#2d6b3c] sm:text-3xl">
+                {selectedPriceLabel || "Pricing Unavailable"}
+              </p>
+            </div>
+            {product.description ? (
+              <p className="mt-4 text-sm font-semibold leading-6 text-[#2b2218]/78">
+                {product.description}
+              </p>
+            ) : null}
+            {selectedPriceLabel ? (
+              <button
+                type="button"
+                onClick={() => {
+                  addProductToCart(product.id, selectedPrice?.id);
+                  router.push("/cart");
+                }}
+                className="mt-6 inline-flex min-h-12 items-center justify-center rounded-full border-2 border-[#161314] bg-[#ffcf4d] px-6 text-xs font-black uppercase tracking-[0.14em] text-[#161314] transition-transform hover:-translate-y-1 hover:bg-[#70d779]"
+              >
+                Add to cart
+              </button>
+            ) : (
+              <div className="mt-6 rounded-xl bg-[#c2410c]/10 p-3 text-xs font-bold text-[#c2410c]">
+                This product is not priced in {currency}. Choose another currency from the menu above.
+              </div>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }

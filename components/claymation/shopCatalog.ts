@@ -74,10 +74,14 @@ export function saveCachedCatalog(catalog: ShopCatalog, cachedCatalog: ShopCatal
   window.localStorage.setItem(CATALOG_CACHE_KEY, JSON.stringify(catalog));
 }
 
-export function getDisplayableProduct(catalog: ShopCatalog) {
+export function getDisplayableProducts(catalog: ShopCatalog) {
   return [...(catalog.products ?? [])]
     .filter((product) => product.active && product.metadata?.display_on_site !== "false")
-    .sort((a, b) => Number(a.metadata?.sort_order ?? 999) - Number(b.metadata?.sort_order ?? 999))[0] ?? null;
+    .sort((a, b) => Number(a.metadata?.sort_order ?? 999) - Number(b.metadata?.sort_order ?? 999));
+}
+
+export function getDisplayableProduct(catalog: ShopCatalog) {
+  return getDisplayableProducts(catalog)[0] ?? null;
 }
 
 export function getDefaultPrice(product: ShopProduct) {
