@@ -39,14 +39,14 @@ export default function ClaymationPage() {
 function ClayHero() {
   return (
     <section className="relative min-h-[650px] overflow-hidden bg-[#bfe9ff]">
-      <Image
+      <img
         src="/claymation/hero-banner-waterfall-clay.webp"
         alt="Whimsical claymation waterfall hero with a traveler in a green hat"
-        fill
-        priority
-        quality={100}
-        sizes="(min-width: 1920px) 1920px, 100vw"
-        className="object-cover object-[62%_50%] md:object-center"
+        width="1920"
+        height="819"
+        decoding="async"
+        fetchPriority="high"
+        className="absolute inset-0 h-full w-full object-cover object-[62%_50%] md:object-center"
       />
       <div className="relative mx-auto flex min-h-[650px] w-full max-w-[1500px] items-end justify-end px-6 py-9 md:items-center md:justify-start md:px-16 md:py-16">
         <div className="w-full md:w-auto">
