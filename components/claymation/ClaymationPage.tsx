@@ -24,12 +24,14 @@ const orderedProductDetails = [...productDetails]
 export default function ClaymationPage() {
   return (
     <main className="min-h-screen bg-[#f6eec9] text-[#161314]">
-      <ClayNavbar />
-      <ClayHero />
-      <ClayShop />
-      <ClayProducts />
-      <ClayContact />
-      <ClayFooter />
+      <div className="mx-auto w-full max-w-[1920px] overflow-hidden">
+        <ClayNavbar />
+        <ClayHero />
+        <ClayShop />
+        <ClayProducts />
+        <ClayContact />
+        <ClayFooter />
+      </div>
     </main>
   );
 }
@@ -43,7 +45,7 @@ function ClayHero() {
         fill
         priority
         quality={100}
-        sizes="100vw"
+        sizes="(min-width: 1920px) 1920px, 100vw"
         className="object-cover object-[62%_50%] md:object-center"
       />
       <div className="relative mx-auto flex min-h-[650px] w-full max-w-[1500px] items-end justify-end px-6 py-9 md:items-center md:justify-start md:px-16 md:py-16">
@@ -205,7 +207,7 @@ function ClayContact() {
         alt=""
         fill
         quality={100}
-        sizes="100vw"
+        sizes="(min-width: 1920px) 1920px, 100vw"
         className="object-cover object-[25%_50%] md:object-center"
       />
       <div className="absolute inset-0 bg-gradient-to-r from-[#f6eec9]/20 via-[#fff7d8]/34 to-[#fff7d8]/60" />
