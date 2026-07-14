@@ -5,10 +5,12 @@ import { useRouter } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
 
 import { db } from "@/lib/firebase";
+import { trackAddToCart, trackShopItemClick } from "@/lib/analytics";
 import {
   CATALOG_CACHE_KEY,
   getCachedCatalog,
   getDefaultPrice,
+  getPriceDisplayAmount,
   getDisplayableProducts,
   formatPrice,
   normalizeCatalog,
@@ -114,6 +116,7 @@ export default function ClayShopCatalog() {
       {state.products.map((product) => {
         const selectedPrice = getDefaultPrice(product);
         const selectedPriceLabel = formatPrice(selectedPrice, currency);
+        const selectedValue = getPriceDisplayAmount(selectedPrice, currency);
 
         return (
           <div
@@ -140,6 +143,18 @@ export default function ClayShopCatalog() {
               <button
                 type="button"
                 onClick={() => {
+                  const eventPayload = {
+                    currency,
+                    itemName: product.name,
+                    location: "home_shop_catalog",
+                    priceId: selectedPrice?.id,
+                    productId: product.id,
+                    quantity: 1,
+                    value: selectedValue,
+                  };
+
+                  trackShopItemClick(eventPayload);
+                  trackAddToCart(eventPayload);
                   addProductToCart(product.id, selectedPrice?.id);
                   router.push("/cart");
                 }}

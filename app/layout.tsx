@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import AnalyticsProvider from "@/components/AnalyticsProvider";
 import CookieConsent from "@/components/CookieConsent";
 import "./globals.css";
 
@@ -84,7 +85,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased relative`}
         suppressHydrationWarning
       >
-        {children}
+        <AnalyticsProvider>{children}</AnalyticsProvider>
         <CookieConsent />
       </body>
     </html>

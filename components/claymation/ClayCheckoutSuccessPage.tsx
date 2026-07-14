@@ -1,21 +1,45 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 
 import ClayNavbar from "@/components/claymation/ClayNavbar";
+import { trackPurchase } from "@/lib/analytics";
 import {
   createEmptyCart,
+  getCartItemCount,
+  getStoredCart,
   notifyCartChanged,
   saveStoredCart,
 } from "@/components/claymation/shopCart";
 
+const PURCHASE_TRACKED_PREFIX = "ryandea-purchase-tracked:";
+
 export default function ClayCheckoutSuccessPage() {
+  const searchParams = useSearchParams();
+
   useEffect(() => {
+    const sessionId = searchParams.get("session_id");
+    const trackedKey = sessionId ? `${PURCHASE_TRACKED_PREFIX}${sessionId}` : null;
+
+    if (!trackedKey || window.localStorage.getItem(trackedKey) !== "true") {
+      const cart = getStoredCart();
+
+      trackPurchase({
+        itemCount: getCartItemCount(cart),
+        transactionId: sessionId,
+      });
+
+      if (trackedKey) {
+        window.localStorage.setItem(trackedKey, "true");
+      }
+    }
+
     const emptyCart = createEmptyCart();
     saveStoredCart(emptyCart);
     notifyCartChanged(emptyCart);
-  }, []);
+  }, [searchParams]);
 
   return (
     <main className="min-h-screen bg-[#f6eec9] text-[#161314]">

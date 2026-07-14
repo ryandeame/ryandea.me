@@ -1,3 +1,5 @@
+import { Suspense } from "react";
+
 import ClayCheckoutSuccessPage from "@/components/claymation/ClayCheckoutSuccessPage";
 
 export const metadata = {
@@ -6,5 +8,9 @@ export const metadata = {
 };
 
 export default function CartSuccessRoutePage() {
-  return <ClayCheckoutSuccessPage />;
+  return (
+    <Suspense fallback={null}>
+      <ClayCheckoutSuccessPage />
+    </Suspense>
+  );
 }

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
 import ClayNavbar from "@/components/claymation/ClayNavbar";
+import { trackBeginCheckout } from "@/lib/analytics";
 import {
   formatCurrencyAmount,
   formatPrice,
@@ -134,6 +135,17 @@ export default function ClayCartPage() {
 
     setCheckoutError("");
     setIsCheckingOut(true);
+    trackBeginCheckout({
+      currency,
+      itemCount,
+      items: resolvedItems.map((item) => ({
+        itemName: item.product?.name,
+        priceId: item.cartItem.priceId,
+        productId: item.cartItem.productId,
+        quantity: item.cartItem.quantity,
+      })),
+      value: cartTotal,
+    });
 
     try {
       const response = await fetch("/api/checkout", {

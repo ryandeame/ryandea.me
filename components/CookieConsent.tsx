@@ -3,9 +3,12 @@
 import { useEffect, useState } from "react";
 import { Cookie, ShieldCheck } from "lucide-react";
 
-type CookiePreference = "accepted" | "essential";
+import {
+  COOKIE_PREFERENCE_CHANGE_EVENT,
+  COOKIE_PREFERENCE_STORAGE_KEY,
+} from "@/lib/analytics";
 
-const STORAGE_KEY = "ryandea-cookie-preference";
+type CookiePreference = "accepted" | "essential";
 
 export default function CookieConsent() {
   const [isReady, setIsReady] = useState(false);
@@ -13,7 +16,7 @@ export default function CookieConsent() {
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
-      const storedPreference = window.localStorage.getItem(STORAGE_KEY);
+      const storedPreference = window.localStorage.getItem(COOKIE_PREFERENCE_STORAGE_KEY);
 
       if (storedPreference === "accepted" || storedPreference === "essential") {
         setIsPanelOpen(false);
@@ -28,7 +31,8 @@ export default function CookieConsent() {
   }, []);
 
   const savePreference = (nextPreference: CookiePreference) => {
-    window.localStorage.setItem(STORAGE_KEY, nextPreference);
+    window.localStorage.setItem(COOKIE_PREFERENCE_STORAGE_KEY, nextPreference);
+    window.dispatchEvent(new Event(COOKIE_PREFERENCE_CHANGE_EVENT));
     setIsPanelOpen(false);
   };
 
