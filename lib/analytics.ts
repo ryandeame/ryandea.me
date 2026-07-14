@@ -20,19 +20,15 @@ export function hasAnalyticsConsent() {
   return window.localStorage.getItem(COOKIE_PREFERENCE_STORAGE_KEY) === "accepted";
 }
 
-export async function trackEvent(eventName: string, eventParams?: AnalyticsParams) {
-  if (!hasAnalyticsConsent()) {
-    return;
-  }
-
+export function trackEvent(eventName: string, eventParams?: AnalyticsParams) {
   try {
-    const analytics = await initAnalytics();
+    const analytics = initAnalytics();
 
     if (analytics) {
       logEvent(analytics, eventName, eventParams);
     }
   } catch (error) {
-    console.error(`[Analytics] Error logging event ${eventName}:`, error);
+    console.error(`[Analytics] Failed to log ${eventName}:`, error);
   }
 }
 
