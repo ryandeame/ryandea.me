@@ -101,7 +101,10 @@ export async function insertTrackingEvents(events: WarehouseEvent[]) {
   const tableName = process.env.BIGQUERY_ANALYTICS_EVENTS_TABLE || DEFAULT_EVENTS_TABLE;
   const rows = events.map((event) => ({
     insertId: event.event_id,
-    json: event,
+    json: {
+      ...event,
+      properties: JSON.stringify(event.properties),
+    },
   }));
 
   await getBigQueryClient()
