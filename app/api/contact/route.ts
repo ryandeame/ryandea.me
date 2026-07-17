@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 import { z } from "zod";
 
+import { recordServerTrackingEvent } from "@/lib/server-tracking";
+
 const contactSchema = z.object({
   name: z.string().min(1).max(100),
   email: z.string().email().max(200),
@@ -67,6 +69,12 @@ export async function POST(req: Request) {
       subject: `${subjectPrefix} New contact from ${name}`,
       text: message,
       html: `<p style="white-space:pre-line;">${message}</p><p>From: ${name} (${email})</p>`,
+    });
+
+    await recordServerTrackingEvent(req, {
+      eventName: "lead_submitted",
+      eventSource: "server",
+      properties: { lead_type: "contact_form" },
     });
 
     return NextResponse.json({ ok: true });

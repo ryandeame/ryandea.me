@@ -3,6 +3,10 @@ import Stripe from "stripe";
 import { z } from "zod";
 
 import { SHOP_CURRENCIES, type ShopCurrency } from "@/components/claymation/shopCurrency";
+import {
+  getRequestTrackingIdentity,
+  recordServerTrackingEvent,
+} from "@/lib/server-tracking";
 
 export const runtime = "nodejs";
 
@@ -116,6 +120,7 @@ export async function POST(req: Request) {
 
     const body = await req.json();
     const { currency, items } = checkoutSchema.parse(body);
+    const trackingIdentity = getRequestTrackingIdentity(req);
     const stripe = new Stripe(stripeSecretKey);
     const siteUrl = getSiteUrl(req);
     const lineItems = await Promise.all(
@@ -129,8 +134,31 @@ export async function POST(req: Request) {
       allow_promotion_codes: true,
       cancel_url: `${siteUrl}/cart`,
       line_items: lineItems,
+      metadata: {
+        ...(trackingIdentity.sessionId
+          ? { tracking_session_id: trackingIdentity.sessionId }
+          : {}),
+        ...(trackingIdentity.visitorId
+          ? { tracking_visitor_id: trackingIdentity.visitorId }
+          : {}),
+      },
       mode: "payment",
       success_url: `${siteUrl}/cart/success?session_id={CHECKOUT_SESSION_ID}`,
+    });
+
+    await recordServerTrackingEvent(req, {
+      eventId: `checkout_${session.id}`,
+      eventName: "checkout_created",
+      eventSource: "server",
+      properties: {
+        currency,
+        item_count: items.reduce((total, item) => total + item.quantity, 0),
+        stripe_checkout_session_id: session.id,
+        value_minor: items.reduce(
+          (total, item) => total + item.displayedMinorAmount * item.quantity,
+          0,
+        ),
+      },
     });
 
     return NextResponse.json({ ok: true, url: session.url });

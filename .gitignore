@@ -45,7 +45,8 @@ next-env.d.ts
 .firebase
 
 # local admin utilities and credentials
-/scripts/
+/scripts/*
+!/scripts/setup-bigquery.mjs
 /stripe/
 
 # local imported assets

@@ -6,9 +6,11 @@
     "dev": "next dev --hostname 0.0.0.0",
     "build": "next build",
     "start": "next start --hostname 0.0.0.0",
-    "lint": "eslint"
+    "lint": "eslint",
+    "setup:bigquery": "node scripts/setup-bigquery.mjs"
   },
   "dependencies": {
+    "@google-cloud/bigquery": "^8.3.1",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.6.0",
     "clsx": "^2.1.1",

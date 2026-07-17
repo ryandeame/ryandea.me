@@ -4,6 +4,7 @@ import { logEvent, setAnalyticsCollectionEnabled } from "firebase/analytics";
 import { usePathname, useSearchParams } from "next/navigation";
 import { Suspense, useEffect } from "react";
 
+import { trackFirstPartyPageView } from "@/lib/first-party-analytics";
 import { initAnalytics } from "@/lib/firebase";
 
 function AnalyticsTracker() {
@@ -14,6 +15,8 @@ function AnalyticsTracker() {
     const pagePath = searchParams.size
       ? `${pathname}?${searchParams.toString()}`
       : pathname;
+
+    trackFirstPartyPageView(pagePath);
 
     try {
       const analytics = initAnalytics();

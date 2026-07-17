@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 import { z } from "zod";
 
+import { recordServerTrackingEvent } from "@/lib/server-tracking";
+
 const newsletterSchema = z.object({
   email: z.string().email().max(200),
 });
@@ -63,6 +65,12 @@ export async function POST(req: Request) {
       subject: "Signing up for newsletter",
       text: `Newsletter signup request from ${email}`,
       html: `<p>Newsletter signup request from <strong>${email}</strong></p>`,
+    });
+
+    await recordServerTrackingEvent(req, {
+      eventName: "newsletter_signup",
+      eventSource: "server",
+      properties: { signup_type: "newsletter" },
     });
 
     return NextResponse.json({ ok: true });

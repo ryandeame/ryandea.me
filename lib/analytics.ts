@@ -1,6 +1,7 @@
 import { logEvent } from "firebase/analytics";
 
 import { initAnalytics } from "@/lib/firebase";
+import { trackFirstPartyEvent } from "@/lib/first-party-analytics";
 
 export const COOKIE_PREFERENCE_CHANGE_EVENT = "ryandea:cookie-preference-change";
 export const COOKIE_PREFERENCE_STORAGE_KEY = "ryandea-cookie-preference";
@@ -21,6 +22,12 @@ export function hasAnalyticsConsent() {
 }
 
 export function trackEvent(eventName: string, eventParams?: AnalyticsParams) {
+  if (eventName !== "purchase") {
+    trackFirstPartyEvent(eventName, eventParams ?? {}, {
+      immediate: eventName === "begin_checkout",
+    });
+  }
+
   try {
     const analytics = initAnalytics();
 
