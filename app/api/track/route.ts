@@ -38,19 +38,60 @@ const batchSchema = z.object({
   events: z.array(eventSchema).min(1).max(20),
 });
 
+function parseOrigin(value: string | null) {
+  if (!value) {
+    return null;
+  }
+
+  try {
+    return new URL(value).origin;
+  } catch {
+    return null;
+  }
+}
+
 function isAllowedOrigin(request: Request) {
-  const origin = request.headers.get("origin");
+  const origin = parseOrigin(request.headers.get("origin"));
 
   if (!origin) {
     return true;
   }
 
-  const requestOrigin = new URL(request.url).origin;
-  const configuredOrigin = process.env.NEXT_PUBLIC_SITE_URL
-    ? new URL(process.env.NEXT_PUBLIC_SITE_URL).origin
-    : null;
+  const allowedOrigins = new Set<string>();
+  const addAllowedOrigin = (value: string | null) => {
+    const parsed = parseOrigin(value);
+    if (parsed) {
+      allowedOrigins.add(parsed);
+    }
+  };
 
-  return origin === requestOrigin || origin === configuredOrigin;
+  addAllowedOrigin(request.url);
+  addAllowedOrigin(process.env.NEXT_PUBLIC_SITE_URL ?? null);
+  addAllowedOrigin("https://ryandea.me");
+  addAllowedOrigin("https://www.ryandea.me");
+
+  const forwardedProto =
+    request.headers.get("x-forwarded-proto")?.split(",")[0]?.trim() || "https";
+  const forwardedHost = request.headers.get("x-forwarded-host")?.split(",")[0]?.trim();
+  const host = request.headers.get("host")?.split(",")[0]?.trim();
+
+  if (forwardedHost) {
+    addAllowedOrigin(`${forwardedProto}://${forwardedHost}`);
+  }
+  if (host) {
+    addAllowedOrigin(`${forwardedProto}://${host}`);
+  }
+
+  const projectId =
+    process.env.GOOGLE_CLOUD_PROJECT ||
+    process.env.GCLOUD_PROJECT ||
+    process.env.FIREBASE_PROJECT_ID ||
+    process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ||
+    "deameryan";
+  addAllowedOrigin(`https://${projectId}.web.app`);
+  addAllowedOrigin(`https://${projectId}.firebaseapp.com`);
+
+  return allowedOrigins.has(origin);
 }
 
 export async function POST(request: Request) {
